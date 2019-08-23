@@ -23,8 +23,8 @@ const createModel = () => {
       activation: 'softmax',
     }),
   )
-  
-return model
+
+  return model
 }
 
 const Button = () => {

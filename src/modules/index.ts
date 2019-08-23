@@ -1,22 +1,34 @@
 import { Reducer } from 'redux'
-import { number } from 'prop-types'
+import { actionChannel } from 'redux-saga/effects'
 
-enum ActionType {
+export enum ActionType {
   SET_EPOCHS = 'SET_EPOCHS',
   INCREMENT_EPOCH = 'INCREMENT_EPOCH',
   SET_LOSS = 'SET_LOSS',
   SET_ACC = 'SET_ACC',
   SET_INDEX = 'SET_INDEX',
-  SET_DATA = 'SET_DATA'
+  SET_DATA = 'SET_DATA',
+  SET_MODEL = 'SET_MODEL',
+  SET_DATA_LOADING = 'SET_LOADING',
+  SET_MODEL_TRAINING = 'SET_MODEL_TRAINING',
+  SET_DATA_LOADED = 'SET_DATA_LOADED',
+  SET_MODEL_TRAINED = 'SET_MODEL_TRAINED',
+  LOAD_DATA = 'LOAD_DATA',
+  TRAIN_MODEL = 'TRAIN_MODEL',
 }
 
-interface State {
+export interface State {
   epochs: number
   currentEpoch: number
   loss: number[]
   acc: number[]
   index: number | null
   data: any
+  model: any
+  dataLoding: boolean
+  modelTraining: boolean
+  dataLoaded: boolean
+  modelTrained: boolean
 }
 
 interface AppAction {
@@ -27,6 +39,11 @@ interface AppAction {
     acc?: number
     index?: number
     data?: any
+    model?: any
+    dataLoding?: boolean
+    modelTraining?: boolean
+    dataLoaded?: boolean
+    modelTrained?: boolean
   }
 }
 
@@ -36,46 +53,93 @@ const initialState: State = {
   loss: [],
   acc: [],
   index: null,
-  data: null
+  data: null,
+  model: null,
+  dataLoding: false,
+  modelTraining: false,
+  dataLoaded: false,
+  modelTrained: false,
 }
 
-const setPoints = (epochs: number) => ({
+export const setPoints = (epochs: number) => ({
   type: ActionType.SET_EPOCHS,
   payload: {
-    epochs: epochs,
+    epochs,
   },
 })
 
-const setLoss = (loss: number) => ({
+export const setLoss = (loss: number) => ({
   type: ActionType.SET_LOSS,
   payload: {
-    loss: loss,
+    loss,
   },
 })
 
-const incrementEpoch = () => ({
+export const incrementEpoch = () => ({
   type: ActionType.INCREMENT_EPOCH,
 })
 
-const setAcc = (acc: number) => ({
+export const setAcc = (acc: number) => ({
   type: ActionType.SET_ACC,
   payload: {
-    acc: acc,
+    acc,
   },
 })
 
-const setIndex = (index: number) => ({
+export const setIndex = (index: number) => ({
   type: ActionType.SET_INDEX,
   payload: {
-    index: index,
+    index,
   },
 })
 
 export const setData = (data: any) => ({
   type: ActionType.SET_DATA,
   payload: {
-    data: data,
-  }
+    data,
+  },
+})
+
+export const setModel = (model: any) => ({
+  type: ActionType.SET_MODEL,
+  payload: {
+    model,
+  },
+})
+
+export const setDataLoading = (dataLoading: boolean) => ({
+  type: ActionType.SET_DATA_LOADING,
+  payload: {
+    dataLoading,
+  },
+})
+
+export const setModelTraining = (modelTraining: boolean) => ({
+  type: ActionType.SET_MODEL_TRAINING,
+  payload: {
+    modelTraining,
+  },
+})
+
+export const setDataLoaded = (dataLoaded: boolean) => ({
+  type: ActionType.SET_DATA_LOADED,
+  payload: {
+    dataLoaded,
+  },
+})
+
+export const setModelTrained = (modelTrained: boolean) => ({
+  type: ActionType.SET_MODEL_TRAINED,
+  payload: {
+    modelTrained,
+  },
+})
+
+export const trainModel = (data: any) => ({
+  type: ActionType.TRAIN_MODEL,
+  payload: {
+    data,
+  },
 })
 
 export const reducer: Reducer<State, AppAction> = (
@@ -112,6 +176,21 @@ export const reducer: Reducer<State, AppAction> = (
       return {
         ...state,
         data: action.payload.data,
+      }
+    case ActionType.SET_MODEL:
+      return {
+        ...state,
+        model: action.payload.model,
+      }
+    case ActionType.SET_DATA_LOADED:
+      return {
+        ...state,
+        dataLoaded: action.payload.dataLoaded,
+      }
+    case ActionType.SET_MODEL_TRAINED:
+      return {
+        ...state,
+        modelTrained: action.payload.modelTrained,
       }
     default: {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars

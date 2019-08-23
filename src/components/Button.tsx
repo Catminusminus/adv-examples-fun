@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles'
 import Button from '@material-ui/core/Button'
-import CircularProgress from '@material-ui/core/CircularProgress';
+import CircularProgress from '@material-ui/core/CircularProgress'
 import { green } from '@material-ui/core/colors'
 import clsx from 'clsx'
 
@@ -36,17 +36,32 @@ interface Props {
   successMessage: string
 }
 
-const ButtonComponent: React.FC<Props> = ({ loading, onClick, success, message, successMessage }) => {
+const ButtonComponent: React.FC<Props> = ({
+  loading,
+  onClick,
+  success,
+  message,
+  successMessage,
+}) => {
   const classes = useStyles()
   const buttonClassname = clsx({
     [classes.buttonSuccess]: success,
   })
+
   return (
     <div className={classes.wrapper}>
-    <Button variant="contained" color="primary" className={buttonClassname} onClick={onClick} disabled={loading}>
-      {success? successMessage: message}
-    </Button>
-    {loading && <CircularProgress size={24} className={classes.buttonProgress} />}
+      <Button
+        variant="contained"
+        color="primary"
+        className={buttonClassname}
+        onClick={onClick}
+        disabled={loading}
+      >
+        {success ? successMessage : message}
+      </Button>
+      {loading && (
+        <CircularProgress size={24} className={classes.buttonProgress} />
+      )}
     </div>
   )
 }

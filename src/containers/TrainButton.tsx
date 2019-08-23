@@ -1,26 +1,34 @@
 import * as React from 'react'
 import Button from '../components/Button'
-import * as tf from '@tensorflow/tfjs'
-import {IMAGE_H, IMAGE_W, MnistData} from '../utils/data';
-import { setData } from '../modules'
-import { useDispatch } from 'react-redux'
+import { State, ActionType } from '../modules'
+import { useDispatch, useSelector } from 'react-redux'
+
+const modelTrainingSelector = (state: State) => state.modelTraining
+const modelTrainedSelector = (state: State) => state.modelTrained
+const modelDataSelector = (state: State) => state.data
 
 const TrainButton = () => {
-  const [loading, setLoading] = React.useState(false)
-  const [success, setSuccess] = React.useState(false)
+  const modelTraining = useSelector(modelTrainingSelector)
+  const modelTrained = useSelector(modelTrainedSelector)
+  const data = useSelector(modelDataSelector)
   const dispatch = useDispatch()
-  const onClick = () => {
-    const loadData = async () => {
-      setLoading(true)
-      const data = new MnistData()
-      await data.load()
-      dispatch(setData(data))
-      setSuccess(true)
-      setLoading(false)
-    }
-    loadData()
-  }
-  return <Button loading={loading} onClick={onClick} success={success} message='Train Model' successMessage='Training End' />
+
+  return (
+    <Button
+      loading={modelTraining}
+      onClick={() => {
+        dispatch({
+          type: ActionType.TRAIN_MODEL,
+          payload: {
+            data,
+          },
+        })
+      }}
+      success={modelTrained}
+      message="Train Model"
+      successMessage="Training End"
+    />
+  )
 }
 
 export default TrainButton

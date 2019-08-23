@@ -1,25 +1,29 @@
 import * as React from 'react'
 import Button from '../components/Button'
-import * as tf from '@tensorflow/tfjs'
-import {IMAGE_H, IMAGE_W, MnistData} from '../utils/data';
-import { setData } from '../modules'
-import { useDispatch } from 'react-redux'
+import { State, ActionType } from '../modules'
+import { useDispatch, useSelector } from 'react-redux'
+
+const dataLoadingSelector = (state: State) => state.dataLoding
+const dataLoadedSelector = (state: State) => state.dataLoaded
 
 const LoadButton = () => {
-  const [loading, setLoading] = React.useState(false)
-  const [success, setSuccess] = React.useState(false)
-  const onClick = () => {
-    const loadData = async () => {
-      setLoading(true)
-      const data = new MnistData()
-      await data.load()
-      setData(data)
-      setSuccess(true)
-      setLoading(false)
-    }
-    loadData()
-  }
-  return <Button loading={loading} onClick={onClick} success={success}b message='Load Data' successMessage='Data Loaded'/>
+  const dataLoading = useSelector(dataLoadingSelector)
+  const dataLoaded = useSelector(dataLoadedSelector)
+  const dispatch = useDispatch()
+
+  return (
+    <Button
+      loading={dataLoading}
+      onClick={() => {
+        dispatch({
+          type: ActionType.LOAD_DATA,
+        })
+      }}
+      success={dataLoaded}
+      message="Load Data"
+      successMessage="Data Loaded"
+    />
+  )
 }
 
 export default LoadButton
