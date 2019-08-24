@@ -1,13 +1,16 @@
 import * as React from 'react'
 import Chart from '../components/chart'
+import { useDispatch, useSelector } from 'react-redux'
+import { State } from '../modules'
+const lossSelector = (state: State) => state.loss
 
 const LossChart = () => {
-  const data = [
-    {
-      miniEpoch: 0,
-      loss: 0,
-    },
-  ]
+  const loss = useSelector(lossSelector)
+
+  const data = loss.map((v, i) => ({
+    miniEpoch: i,
+    loss: v,
+  }))
 
   return (
     <Chart

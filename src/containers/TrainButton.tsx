@@ -18,9 +18,10 @@ const TrainButton = () => {
       loading={modelTraining}
       onClick={() => {
         dispatch({
-          type: ActionType.TRAIN_MODEL,
+          type: 'TRAIN_MODEL',
           payload: {
             data,
+            dispatch,
           },
         })
       }}

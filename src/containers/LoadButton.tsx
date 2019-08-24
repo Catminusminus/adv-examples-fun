@@ -16,7 +16,7 @@ const LoadButton = () => {
       loading={dataLoading}
       onClick={() => {
         dispatch({
-          type: ActionType.LOAD_DATA,
+          type: 'LOAD_DATA',
         })
       }}
       success={dataLoaded}

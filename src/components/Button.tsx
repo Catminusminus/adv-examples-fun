@@ -48,6 +48,9 @@ const ButtonComponent: React.FC<Props> = ({
     [classes.buttonSuccess]: success,
   })
 
+  console.log(message)
+  console.log(loading)
+
   return (
     <div className={classes.wrapper}>
       <Button

@@ -1,21 +1,5 @@
-import { Reducer } from 'redux'
-import { actionChannel } from 'redux-saga/effects'
-
-export enum ActionType {
-  SET_EPOCHS = 'SET_EPOCHS',
-  INCREMENT_EPOCH = 'INCREMENT_EPOCH',
-  SET_LOSS = 'SET_LOSS',
-  SET_ACC = 'SET_ACC',
-  SET_INDEX = 'SET_INDEX',
-  SET_DATA = 'SET_DATA',
-  SET_MODEL = 'SET_MODEL',
-  SET_DATA_LOADING = 'SET_LOADING',
-  SET_MODEL_TRAINING = 'SET_MODEL_TRAINING',
-  SET_DATA_LOADED = 'SET_DATA_LOADED',
-  SET_MODEL_TRAINED = 'SET_MODEL_TRAINED',
-  LOAD_DATA = 'LOAD_DATA',
-  TRAIN_MODEL = 'TRAIN_MODEL',
-}
+import { Reducer, AnyAction } from 'redux'
+import * as actions from './actions'
 
 export interface State {
   epochs: number
@@ -29,22 +13,6 @@ export interface State {
   modelTraining: boolean
   dataLoaded: boolean
   modelTrained: boolean
-}
-
-interface AppAction {
-  type: ActionType
-  payload: {
-    epochs?: number
-    loss?: number
-    acc?: number
-    index?: number
-    data?: any
-    model?: any
-    dataLoding?: boolean
-    modelTraining?: boolean
-    dataLoaded?: boolean
-    modelTrained?: boolean
-  }
 }
 
 const initialState: State = {
@@ -61,141 +29,141 @@ const initialState: State = {
   modelTrained: false,
 }
 
-export const setPoints = (epochs: number) => ({
-  type: ActionType.SET_EPOCHS,
-  payload: {
-    epochs,
-  },
-})
+export const setEpochs = (epochs: number) => ({
+  type: 'SET_EPOCHS',
+  payload: epochs,
+} as const)
 
 export const setLoss = (loss: number) => ({
-  type: ActionType.SET_LOSS,
-  payload: {
-    loss,
-  },
-})
+  type: 'SET_LOSS',
+  payload: loss
+} as const)
 
 export const incrementEpoch = () => ({
-  type: ActionType.INCREMENT_EPOCH,
-})
+  type: 'INCREMENT_EPOCH',
+} as const)
 
 export const setAcc = (acc: number) => ({
-  type: ActionType.SET_ACC,
-  payload: {
-    acc,
-  },
-})
+  type: 'SET_ACC',
+  payload: acc,
+} as const)
 
 export const setIndex = (index: number) => ({
-  type: ActionType.SET_INDEX,
-  payload: {
-    index,
-  },
-})
+  type: 'SET_INDEX',
+  payload: index,
+} as const)
 
 export const setData = (data: any) => ({
-  type: ActionType.SET_DATA,
-  payload: {
-    data,
-  },
-})
+  type: 'SET_DATA',
+  payload: data,
+} as const)
 
 export const setModel = (model: any) => ({
-  type: ActionType.SET_MODEL,
-  payload: {
-    model,
-  },
-})
+  type: 'SET_MODEL',
+  payload: model,
+} as const)
 
 export const setDataLoading = (dataLoading: boolean) => ({
-  type: ActionType.SET_DATA_LOADING,
-  payload: {
-    dataLoading,
-  },
-})
+  type: 'SET_DATA_LOADING',
+  payload: dataLoading,
+} as const)
 
 export const setModelTraining = (modelTraining: boolean) => ({
-  type: ActionType.SET_MODEL_TRAINING,
-  payload: {
-    modelTraining,
-  },
-})
+  type: 'SET_MODEL_TRAINING',
+  payload: modelTraining,
+} as const)
 
 export const setDataLoaded = (dataLoaded: boolean) => ({
-  type: ActionType.SET_DATA_LOADED,
-  payload: {
-    dataLoaded,
-  },
-})
+  type: 'SET_DATA_LOADED',
+  payload: dataLoaded,
+} as const)
 
 export const setModelTrained = (modelTrained: boolean) => ({
-  type: ActionType.SET_MODEL_TRAINED,
-  payload: {
-    modelTrained,
-  },
-})
+  type: 'SET_MODEL_TRAINED',
+  payload: modelTrained,
+} as const)
 
 export const trainModel = (data: any) => ({
-  type: ActionType.TRAIN_MODEL,
-  payload: {
-    data,
-  },
-})
+  type: 'TRAIN_MODEL',
+  payload: data,
+} as const)
+
+export type ActionsType<ActionCreators extends object> = {
+  [Key in keyof ActionCreators]: ActionCreators[Key] extends (
+    ...args: any[]
+  ) => AnyAction
+    ? ReturnType<ActionCreators[Key]>
+    : never
+}
+
+export type ActionType<
+  ActionCreators extends object,
+  Actions = ActionsType<ActionCreators>
+> = { [Key in keyof Actions]: Actions[Key] }[keyof Actions]
+
+type AppAction =ActionType<typeof actions>
 
 export const reducer: Reducer<State, AppAction> = (
   state: State = initialState,
   action: AppAction,
 ) => {
   switch (action.type) {
-    case ActionType.SET_EPOCHS:
+    case 'SET_EPOCHS':
       return {
         ...state,
-        epochs: action.payload.epochs,
+        epochs: action.payload,
       }
-    case ActionType.INCREMENT_EPOCH:
+    case 'INCREMENT_EPOCH':
       return {
         ...state,
         currentEpoch: state.currentEpoch + 1,
       }
-    case ActionType.SET_LOSS:
+    case 'SET_LOSS':
       return {
         ...state,
-        loss: state.loss.concat([action.payload.loss || -1]),
+        loss: state.loss.concat([action.payload || -1]),
       }
-    case ActionType.SET_ACC:
+    case 'SET_ACC':
       return {
         ...state,
-        acc: state.acc.concat([action.payload.acc || 0]),
+        acc: state.acc.concat([action.payload || 0]),
       }
-    case ActionType.SET_INDEX:
+    case 'SET_INDEX':
       return {
         ...state,
-        index: action.payload.index,
+        index: action.payload,
       }
-    case ActionType.SET_DATA:
+    case 'SET_DATA':
       return {
         ...state,
-        data: action.payload.data,
+        data: action.payload,
       }
-    case ActionType.SET_MODEL:
+    case 'SET_MODEL':
       return {
         ...state,
-        model: action.payload.model,
+        model: action.payload,
       }
-    case ActionType.SET_DATA_LOADED:
+    case 'SET_DATA_LOADED':
       return {
         ...state,
-        dataLoaded: action.payload.dataLoaded,
+        dataLoaded: action.payload,
       }
-    case ActionType.SET_MODEL_TRAINED:
+    case 'SET_MODEL_TRAINED':
       return {
         ...state,
-        modelTrained: action.payload.modelTrained,
+        modelTrained: action.payload,
+      }
+    case 'SET_DATA_LOADING':
+      return {
+        ...state,
+        dataLoding: action.payload,
+      }
+    case 'SET_MODEL_TRAINING':
+      return {
+        ...state,
+        modelTraining: action.payload,
       }
     default: {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const _: never = action.type
-
       return state
     }
   }

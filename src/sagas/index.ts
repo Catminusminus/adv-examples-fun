@@ -12,8 +12,9 @@ import {
   setLoss,
   setAcc,
 } from '../modules'
+import * as tf from '@tensorflow/tfjs'
 
-const train = async (data: any, model: any, onIteration?: any) => {
+const train = async (data: any, dispatch: any, model: any, onIteration?: any) => {
   // Batch size is another important hyperparameter. It defines the number of
   // examples we group together, or batch, between updates to the model's
   // weights during training. A value that is too low will update weights using
@@ -26,10 +27,12 @@ const train = async (data: any, model: any, onIteration?: any) => {
   const validationSplit = 0.15
 
   // Get number of training epochs from the UI.
-  const trainEpochs = 10
+  const trainEpochs = 3
 
   // We'll keep a buffer of loss and accuracy values over time.
   let trainBatchCount = 0
+
+  console.log(data)
 
   const trainData = data.getTrainData()
   const testData = data.getTestData()
@@ -54,8 +57,9 @@ const train = async (data: any, model: any, onIteration?: any) => {
             `${((trainBatchCount / totalNumBatches) * 100).toFixed(1)}%` +
             ` complete). To stop training, refresh or close page.`,
         ) */
-        put(setLoss(logs.loss))
-        put(setAcc(logs.acc))
+        console.log(`batchend loss:${logs.loss} acc:${logs.acc}`)
+        dispatch(setLoss(logs.loss))
+        dispatch(setAcc(logs.acc))
         // ui.plotLoss(trainBatchCount, logs.loss, 'train')
         // ui.plotAccuracy(trainBatchCount, logs.acc, 'train')
         if (onIteration && batch % 10 === 0) {
@@ -73,6 +77,7 @@ const train = async (data: any, model: any, onIteration?: any) => {
         }
         await tf.nextFrame()
         */
+        console.log('epochend')
       },
     },
   })
@@ -97,12 +102,13 @@ function* trainModel(action: any) {
   yield put(setModelTrained(false))
   yield put(setModelTraining(true))
   const model = createModel()
-  yield call(train, action.payload.data, model)
+  yield call(train, action.payload.data, action.payload.dispatch, model)
   yield setModel(model)
+  yield put(setModelTraining(false))
   yield put(setModelTrained(true))
 }
 
 export default function* rootSaga() {
-  yield takeEvery(ActionType.LOAD_DATA, loadData)
-  yield takeEvery(ActionType.TRAIN_MODEL, trainModel)
+  yield takeEvery('LOAD_DATA', loadData)
+  yield takeEvery('TRAIN_MODEL', trainModel)
 }
