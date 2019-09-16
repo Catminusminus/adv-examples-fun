@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Chart from '../components/chart'
+import Chart from '../components/Chart'
 import { useDispatch, useSelector } from 'react-redux'
 import { State } from '../modules'
 const accSelector = (state: State) => state.acc
