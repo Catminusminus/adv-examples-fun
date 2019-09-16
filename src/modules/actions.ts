@@ -1,4 +1,5 @@
 import { Dispatch } from 'redux'
+import { StateStage } from './index'
 
 export const setEpochs = (epochs: number) => ({
   type: 'SET_EPOCHS',
@@ -34,24 +35,14 @@ export const setModel = (model: any) => ({
   payload: model,
 } as const)
 
-export const setDataLoading = (dataLoading: boolean) => ({
-  type: 'SET_DATA_LOADING',
-  payload: dataLoading,
+export const setDataState = (dataState: StateStage) => ({
+  type: 'SET_DATA_STATE',
+  payload: dataState,
 } as const)
 
-export const setModelTraining = (modelTraining: boolean) => ({
-  type: 'SET_MODEL_TRAINING',
-  payload: modelTraining,
-} as const)
-
-export const setDataLoaded = (dataLoaded: boolean) => ({
-  type: 'SET_DATA_LOADED',
-  payload: dataLoaded,
-} as const)
-
-export const setModelTrained = (modelTrained: boolean) => ({
-  type: 'SET_MODEL_TRAINED',
-  payload: modelTrained,
+export const setModelState = (modelState: StateStage) => ({
+  type: 'SET_MODEL_STATE',
+  payload: modelState,
 } as const)
 
 export const trainModel = (data: any, dispatch: Dispatch<any>) => ({
@@ -60,4 +51,40 @@ export const trainModel = (data: any, dispatch: Dispatch<any>) => ({
     data,
     dispatch,
   },
+} as const)
+
+export const setImage = (image: any, label: any, index: number) => ({
+  type: 'SET_IMAGE',
+  payload: {
+    image,
+    label,
+    index,
+  },
+} as const)
+
+export const setPredicateState = (predicateState: StateStage) => ({
+  type: 'SET_PREDICATE_STATE',
+  payload: predicateState,
+} as const)
+
+export const predictImage = (data: any, dispatch: Dispatch<any>, model: any) => ({
+  type: 'PREDICT',
+  payload: {
+    data,
+    dispatch,
+    model,
+  }
+} as const)
+
+export const setPerturbation = (perturbation: any) => ({
+  type: 'SET_PERTURBATION',
+  payload: perturbation,
+} as const)
+
+export const setAdvImage = (image: any, label: any) => ({
+  type: 'SET_ADVIMAGE',
+  payload: {
+    image,
+    label,
+  }
 } as const)

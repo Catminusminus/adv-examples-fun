@@ -30,6 +30,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface Props {
   loading: boolean
+  disabled: boolean
   onClick: any
   success: boolean
   message: string
@@ -38,6 +39,7 @@ interface Props {
 
 const ButtonComponent: React.FC<Props> = ({
   loading,
+  disabled,
   onClick,
   success,
   message,
@@ -48,9 +50,6 @@ const ButtonComponent: React.FC<Props> = ({
     [classes.buttonSuccess]: success,
   })
 
-  console.log(message)
-  console.log(loading)
-
   return (
     <div className={classes.wrapper}>
       <Button
@@ -58,7 +57,7 @@ const ButtonComponent: React.FC<Props> = ({
         color="primary"
         className={buttonClassname}
         onClick={onClick}
-        disabled={loading}
+        disabled={disabled || loading}
       >
         {success ? successMessage : message}
       </Button>

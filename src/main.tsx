@@ -5,15 +5,18 @@ import AccChart from './containers/AccChart'
 import LossChart from './containers/LossChart'
 import LoadButton from './containers/LoadButton'
 import TrainButton from './containers/TrainButton'
+import AccImage from './containers/Image'
 import { Provider } from 'react-redux'
 import { createStore, applyMiddleware } from 'redux'
 import { reducer } from './modules'
 import createSagaMiddleware from 'redux-saga'
 import rootSaga from './sagas'
 import { composeWithDevTools } from 'redux-devtools-extension'
+import GenButton from './containers/GenButton'
 
 const sagaMiddleware = createSagaMiddleware()
-const store = createStore(reducer, composeWithDevTools(applyMiddleware(sagaMiddleware)))
+// const store = createStore(reducer, composeWithDevTools(applyMiddleware(sagaMiddleware)))
+const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 sagaMiddleware.run(rootSaga)
 const App = () => (
   <Provider store={store}>
@@ -29,6 +32,9 @@ const App = () => (
       </Grid>
       <Grid container item xs={6} justify="center">
         <AccChart />
+      </Grid>
+      <Grid container item xs={12} justify="center">
+        <GenButton />
       </Grid>
     </Grid>
   </Provider>

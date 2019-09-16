@@ -1,21 +1,22 @@
 import * as React from 'react'
 import Button from '../components/Button'
-import { State, ActionType } from '../modules'
+import { State, StateStage } from '../modules'
 import { useDispatch, useSelector } from 'react-redux'
 
-const modelTrainingSelector = (state: State) => state.modelTraining
-const modelTrainedSelector = (state: State) => state.modelTrained
+const modelStateSelector = (state: State) => state.modelState
 const modelDataSelector = (state: State) => state.data
+const dataStateSelector = (state: State) => state.dataState
 
 const TrainButton = () => {
-  const modelTraining = useSelector(modelTrainingSelector)
-  const modelTrained = useSelector(modelTrainedSelector)
+  const modelState = useSelector(modelStateSelector)
   const data = useSelector(modelDataSelector)
+  const dataState = useSelector(dataStateSelector)
   const dispatch = useDispatch()
 
   return (
     <Button
-      loading={modelTraining}
+      loading={modelState === StateStage.working}
+      disabled={dataState !== StateStage.end}
       onClick={() => {
         dispatch({
           type: 'TRAIN_MODEL',
@@ -25,7 +26,7 @@ const TrainButton = () => {
           },
         })
       }}
-      success={modelTrained}
+      success={modelState === StateStage.end}
       message="Train Model"
       successMessage="Training End"
     />

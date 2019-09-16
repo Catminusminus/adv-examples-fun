@@ -1,6 +1,12 @@
 import { Reducer, AnyAction } from 'redux'
 import * as actions from './actions'
 
+export enum StateStage {
+  init,
+  working,
+  end,
+}
+
 export interface State {
   epochs: number
   currentEpoch: number
@@ -9,10 +15,19 @@ export interface State {
   index: number | null
   data: any
   model: any
-  dataLoding: boolean
-  modelTraining: boolean
-  dataLoaded: boolean
-  modelTrained: boolean
+  dataState: StateStage
+  modelState: StateStage
+  accImage: {
+    image: any
+    label: any
+    index: number
+  }
+  predicateState: StateStage
+  perturbation: any
+  advImage: {
+    image: any
+    label: any
+  }
 }
 
 const initialState: State = {
@@ -23,70 +38,20 @@ const initialState: State = {
   index: null,
   data: null,
   model: null,
-  dataLoding: false,
-  modelTraining: false,
-  dataLoaded: false,
-  modelTrained: false,
+  dataState: StateStage.init,
+  modelState: StateStage.init,
+  accImage: {
+    image: null,
+    label: null,
+    index: 0,
+  },
+  predicateState: StateStage.init,
+  perturbation: null,
+  advImage: {
+    image: null,
+    label: null,
+  },
 }
-
-export const setEpochs = (epochs: number) => ({
-  type: 'SET_EPOCHS',
-  payload: epochs,
-} as const)
-
-export const setLoss = (loss: number) => ({
-  type: 'SET_LOSS',
-  payload: loss
-} as const)
-
-export const incrementEpoch = () => ({
-  type: 'INCREMENT_EPOCH',
-} as const)
-
-export const setAcc = (acc: number) => ({
-  type: 'SET_ACC',
-  payload: acc,
-} as const)
-
-export const setIndex = (index: number) => ({
-  type: 'SET_INDEX',
-  payload: index,
-} as const)
-
-export const setData = (data: any) => ({
-  type: 'SET_DATA',
-  payload: data,
-} as const)
-
-export const setModel = (model: any) => ({
-  type: 'SET_MODEL',
-  payload: model,
-} as const)
-
-export const setDataLoading = (dataLoading: boolean) => ({
-  type: 'SET_DATA_LOADING',
-  payload: dataLoading,
-} as const)
-
-export const setModelTraining = (modelTraining: boolean) => ({
-  type: 'SET_MODEL_TRAINING',
-  payload: modelTraining,
-} as const)
-
-export const setDataLoaded = (dataLoaded: boolean) => ({
-  type: 'SET_DATA_LOADED',
-  payload: dataLoaded,
-} as const)
-
-export const setModelTrained = (modelTrained: boolean) => ({
-  type: 'SET_MODEL_TRAINED',
-  payload: modelTrained,
-} as const)
-
-export const trainModel = (data: any) => ({
-  type: 'TRAIN_MODEL',
-  payload: data,
-} as const)
 
 export type ActionsType<ActionCreators extends object> = {
   [Key in keyof ActionCreators]: ActionCreators[Key] extends (
@@ -143,25 +108,35 @@ export const reducer: Reducer<State, AppAction> = (
         ...state,
         model: action.payload,
       }
-    case 'SET_DATA_LOADED':
+    case 'SET_DATA_STATE':
       return {
         ...state,
-        dataLoaded: action.payload,
+        dataState: action.payload,
       }
-    case 'SET_MODEL_TRAINED':
+    case 'SET_MODEL_STATE':
       return {
         ...state,
-        modelTrained: action.payload,
+        modelState: action.payload,
       }
-    case 'SET_DATA_LOADING':
+    case 'SET_IMAGE':
       return {
         ...state,
-        dataLoding: action.payload,
+        accImage: action.payload,
       }
-    case 'SET_MODEL_TRAINING':
+    case 'SET_PREDICATE_STATE':
       return {
         ...state,
-        modelTraining: action.payload,
+        predicateState: action.payload,
+      }
+    case 'SET_PERTURBATION':
+      return {
+        ...state,
+        perturbation: action.payload,
+      }
+    case 'SET_ADVIMAGE':
+      return {
+        ...state,
+        advImage: action.payload,
       }
     default: {
       return state
