@@ -4,6 +4,10 @@ Try to generate adversarial images for fun and profit.
 ## What is this
 You can generate adversarial images in your browser by the power of tensorflow.js.
 
+Demo: https://adv-examples-fun.netlify.com/
+
+Attention! The above site is heavy. If you see a blank page, reload your browser.
+
 ## Citations
 FGSM is described by
 ```
