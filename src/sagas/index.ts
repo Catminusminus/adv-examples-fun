@@ -1,3 +1,20 @@
+/**
+ * @license
+ * Copyright 2018 Google LLC. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * =============================================================================
+ */
+
 import { all, put, takeEvery, call } from 'redux-saga/effects'
 import { MnistData } from '../utils/data'
 import { createModel } from '../utils/model'
@@ -22,23 +39,11 @@ const train = async (
   model: any,
   onIteration?: any,
 ) => {
-  // Batch size is another important hyperparameter. It defines the number of
-  // examples we group together, or batch, between updates to the model's
-  // weights during training. A value that is too low will update weights using
-  // too few examples and will not generalize well. Larger batch sizes require
-  // more memory resources and aren't guaranteed to perform better.
   const batchSize = 320
-
-  // Leave out the last 15% of the training data for validation, to monitor
-  // overfitting during training.
   const validationSplit = 0.15
-
   const trainEpochs = 1
-
   const trainData = data.getTrainData()
-  // During the long-running fit() call for model training, we include
-  // callbacks, so that we can plot the loss and accuracy values in the page
-  // as the training progresses.
+
   await model.fit(trainData.xs, trainData.labels, {
     batchSize,
     validationSplit,
@@ -97,25 +102,8 @@ const formatImage = (image: any) => {
 async function showPrediction(data: any, dispatch: any, model: any) {
   const testExamples = 100
   const examples = data.getTestData(testExamples)
-
-  // Code wrapped in a tf.tidy() function callback will have their tensors freed
-  // from GPU memory after execution without having to call dispose().
-  // The tf.tidy callback runs synchronously.
   tf.tidy(() => {
     const output = model.predict(examples.xs)
-
-    // tf.argMax() returns the indices of the maximum values in the tensor along
-    // a specific axis. Categorical classification tasks like this one often
-    // represent classes as one-hot vectors. One-hot vectors are 1D vectors with
-    // one element for each output class. All values in the vector are 0
-    // except for one, which has a value of 1 (e.g. [0, 0, 0, 1, 0]). The
-    // output from model.predict() will be a probability distribution, so we use
-    // argMax to get the index of the vector element that has the highest
-    // probability. This is our prediction.
-    // (e.g. argmax([0.07, 0.1, 0.03, 0.75, 0.05]) == 3)
-    // dataSync() synchronously downloads the tf.tensor values from the GPU so
-    // that we can use them in our normal CPU JavaScript code
-    // (for a non-blocking version of this function, use data()).
     const axis = 1
     const labels = Array.from(examples.labels.argMax(axis).dataSync())
     const predictions = Array.from(output.argMax(axis).dataSync())
