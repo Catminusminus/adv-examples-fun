@@ -10,13 +10,11 @@ import {
   setLoss,
   setAcc,
   setImage,
-  predictImage,
   setPerturbation,
   setAdvImage,
 } from '../modules/actions'
 import { StateStage } from '../modules'
 import * as tf from '@tensorflow/tfjs'
-import * as Konva from 'konva'
 
 const train = async (
   data: any,
@@ -35,65 +33,33 @@ const train = async (
   // overfitting during training.
   const validationSplit = 0.15
 
-  // Get number of training epochs from the UI.
   const trainEpochs = 1
 
-  // We'll keep a buffer of loss and accuracy values over time.
-  let trainBatchCount = 0
-
-  console.log(data)
-
   const trainData = data.getTrainData()
-  const testData = data.getTestData()
-
-  const totalNumBatches =
-    Math.ceil((trainData.xs.shape[0] * (1 - validationSplit)) / batchSize) *
-    trainEpochs
-
   // During the long-running fit() call for model training, we include
   // callbacks, so that we can plot the loss and accuracy values in the page
   // as the training progresses.
-  let valAcc
   await model.fit(trainData.xs, trainData.labels, {
     batchSize,
     validationSplit,
     epochs: trainEpochs,
     callbacks: {
       onBatchEnd: async (batch: any, logs: any) => {
-        trainBatchCount++
-        /** ui.logStatus(
-          `Training... (` +
-            `${((trainBatchCount / totalNumBatches) * 100).toFixed(1)}%` +
-            ` complete). To stop training, refresh or close page.`,
-        ) */
+        // eslint-disable-next-line no-console
         console.log(`batchend loss:${logs.loss} acc:${logs.acc}`)
         dispatch(setLoss(logs.loss))
         dispatch(setAcc(logs.acc))
-        // ui.plotLoss(trainBatchCount, logs.loss, 'train')
-        // ui.plotAccuracy(trainBatchCount, logs.acc, 'train')
         if (onIteration && batch % 10 === 0) {
           onIteration('onBatchEnd', batch, logs)
         }
         await tf.nextFrame()
       },
-      onEpochEnd: async (epoch: any, logs: any) => {
-        /**
-        valAcc = logs.val_acc
-        ui.plotLoss(trainBatchCount, logs.val_loss, 'validation')
-        ui.plotAccuracy(trainBatchCount, logs.val_acc, 'validation')
-        if (onIteration) {
-          onIteration('onEpochEnd', epoch, logs)
-        }
-        await tf.nextFrame()
-        */
+      onEpochEnd: async () => {
+        // eslint-disable-next-line no-console
         console.log('epochend')
       },
     },
   })
-
-  // const testResult = model.evaluate(testData.xs, testData.labels)
-  // const testAccPercent = testResult[1].dataSync()[0] * 100
-  // const finalValAccPercent = valAcc * 100
 }
 
 const selectAccurateExample = (labels: any[], predictions: any[]) => {
@@ -120,14 +86,9 @@ const formatImage = (image: any) => {
     imageData.data[j + 2] = data[i] * 255
     imageData.data[j + 3] = 255
   }
-  console.log(imageData)
-  // return imageData
-  // return new Konva.Image({ image: imageData })
   ctx.putImageData(imageData, 0, 0)
   const ctxBig = cnv.getContext('2d') as CanvasRenderingContext2D
   ctxBig.scale(3, 3)
-  // ctxBig.putImageData(imageData, 0, 0)
-  // return createImageBitmap(imageData)
   ctxBig.drawImage(cnv, 0, 0)
 
   return cnv
@@ -158,12 +119,8 @@ async function showPrediction(data: any, dispatch: any, model: any) {
     const axis = 1
     const labels = Array.from(examples.labels.argMax(axis).dataSync())
     const predictions = Array.from(output.argMax(axis).dataSync())
-    console.log(labels)
-    console.log(predictions)
     const accIndices = selectAccurateExample(labels, predictions)
     const index = accIndices[Math.floor(Math.random() * accIndices.length)]
-    console.log(index)
-    // dispatch(setImage(bitmap, predictions[index]))
     dispatch(
       setImage(
         formatImage(
@@ -173,7 +130,6 @@ async function showPrediction(data: any, dispatch: any, model: any) {
         index,
       ),
     )
-    // ui.showTestResults(examples, predictions, labels);
     const image = examples.xs.slice([index, 0], [1, examples.xs.shape[1]])
     const loss = (input: any) =>
       tf.metrics.categoricalCrossentropy(
@@ -181,25 +137,21 @@ async function showPrediction(data: any, dispatch: any, model: any) {
         model.predict(input),
       )
     const grad = tf.grad(loss)
-    const signed_grad = tf.sign(grad(image))
+    const signedGrad = tf.sign(grad(image))
     const scalar = tf.scalar(0.3, 'float32')
 
-    const output_adv = model.predict(signed_grad.mul(scalar).add(image))
-    const predictions_adv = Array.from(output_adv.argMax(axis).dataSync())
-    console.log(signed_grad)
-    console.log(image)
-    console.log(signed_grad.add(image))
-    signed_grad.print()
-    dispatch(setPerturbation(formatImage(signed_grad.flatten())))
+    const outputAdv = model.predict(signedGrad.mul(scalar).add(image))
+    const predictionsAdv = Array.from(outputAdv.argMax(axis).dataSync())
+    dispatch(setPerturbation(formatImage(signedGrad.flatten())))
     dispatch(
       setAdvImage(
         formatImage(
-          signed_grad
+          signedGrad
             .mul(scalar)
             .add(image)
             .flatten(),
         ),
-        predictions_adv[0],
+        predictionsAdv[0],
       ),
     )
   })
@@ -221,7 +173,6 @@ function* trainModel(action: any) {
   const model = createModel()
   yield call(train, action.payload.data, action.payload.dispatch, model)
   yield all([put(setModel(model)), put(setModelState(StateStage.end))])
-  // yield put(predictImage(action.payload.data, action.payload.dispatch, model))
 }
 
 function* predict(action: any) {
@@ -233,46 +184,6 @@ function* predict(action: any) {
     action.payload.model,
   )
   yield all([put(setPredicateState(StateStage.end))])
-}
-
-const makePerturbation = async (
-  data: any,
-  dispatch: any,
-  label: any,
-  index: any,
-  model: any,
-) => {
-  const testExamples = 100
-  const examples = data.getTestData(testExamples)
-  tf.tidy(() => {
-    // tf.argMax() returns the indices of the maximum values in the tensor along
-    // a specific axis. Categorical classification tasks like this one often
-    // represent classes as one-hot vectors. One-hot vectors are 1D vectors with
-    // one element for each output class. All values in the vector are 0
-    // except for one, which has a value of 1 (e.g. [0, 0, 0, 1, 0]). The
-    // output from model.predict() will be a probability distribution, so we use
-    // argMax to get the index of the vector element that has the highest
-    // probability. This is our prediction.
-    // (e.g. argmax([0.07, 0.1, 0.03, 0.75, 0.05]) == 3)
-    // dataSync() synchronously downloads the tf.tensor values from the GPU so
-    // that we can use them in our normal CPU JavaScript code
-    // (for a non-blocking version of this function, use data()).
-    const axis = 1
-
-    const image = examples.xs.slice([index, 0], [1, examples.xs.shape[1]])
-    const loss = (input: any) =>
-      tf.metrics.categoricalCrossentropy(label, model.predict(input))
-    const grad = tf.grad(loss)
-    const signed_grad = tf.sign(grad(image))
-    const output = model.predict(image)
-    const predictions = Array.from(output.argMax(axis).dataSync())
-
-    dispatch(setPerturbation(formatImage(signed_grad.flatten())))
-    dispatch(
-      setAdvImage(formatImage((signed_grad + image).flatten()), predictions[0]),
-    )
-    // ui.showTestResults(examples, predictions, labels);
-  })
 }
 
 export default function* rootSaga() {

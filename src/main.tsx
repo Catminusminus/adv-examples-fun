@@ -10,11 +10,11 @@ import { createStore, applyMiddleware } from 'redux'
 import { reducer } from './modules'
 import createSagaMiddleware from 'redux-saga'
 import rootSaga from './sagas'
-import { composeWithDevTools } from 'redux-devtools-extension'
+// import { composeWithDevTools } from 'redux-devtools-extension'
 import GenButton from './containers/GenButton'
 
 const sagaMiddleware = createSagaMiddleware()
-// When you use the next line, your browser will crash
+// If you use the next line, your browser will crash
 // const store = createStore(reducer, composeWithDevTools(applyMiddleware(sagaMiddleware)))
 const store = createStore(reducer, applyMiddleware(sagaMiddleware))
 sagaMiddleware.run(rootSaga)

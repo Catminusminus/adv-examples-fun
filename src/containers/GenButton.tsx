@@ -20,11 +20,10 @@ const GenButton = () => {
   const predicateState = useSelector(predicteStateSelector)
   const { image: advImage, label: advLabel } = useSelector(advSelector)
   const perturbation = useSelector(perturbationSelector)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { image, label, index: _ } = useSelector(imageSelector)
 
   const dispatch = useDispatch()
-
-  console.log(`model: ${model} data: ${data} dipatch: ${dispatch}`)
 
   return (
     <>
