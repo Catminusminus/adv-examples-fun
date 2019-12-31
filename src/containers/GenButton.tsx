@@ -18,9 +18,9 @@ const GenButton = () => {
   const data = useSelector(modelDataSelector)
   const modelState = useSelector(modelStateSelector)
   const predicateState = useSelector(predicteStateSelector)
-  const {image: advImage, label: advLabel} = useSelector(advSelector)
+  const { image: advImage, label: advLabel } = useSelector(advSelector)
   const perturbation = useSelector(perturbationSelector)
-  const {image, label, index: _} = useSelector(imageSelector)
+  const { image, label, index: _ } = useSelector(imageSelector)
 
   const dispatch = useDispatch()
 
@@ -28,19 +28,25 @@ const GenButton = () => {
 
   return (
     <>
-    <Button
-      loading={predicateState === StateStage.working}
-      disabled={modelState !== StateStage.end}
-      onClick={() => {
-        dispatch(predictImage(data, dispatch, model))
-      }}
-      success={predicateState === StateStage.end}
-      message="Generate Adversarial Examples"
-      successMessage="Generated. Try again?"
-    />
-    {
-      predicateState === StateStage.end && <AdvImage image={image} perturbation={perturbation} advImage={advImage} label={label} advLabel={advLabel} />
-    }
+      <Button
+        loading={predicateState === StateStage.working}
+        disabled={modelState !== StateStage.end}
+        onClick={() => {
+          dispatch(predictImage(data, dispatch, model))
+        }}
+        success={predicateState === StateStage.end}
+        message="Generate Adversarial Examples"
+        successMessage="Generated. Try again?"
+      />
+      {predicateState === StateStage.end && (
+        <AdvImage
+          image={image}
+          perturbation={perturbation}
+          advImage={advImage}
+          label={label}
+          advLabel={advLabel}
+        />
+      )}
     </>
   )
 }

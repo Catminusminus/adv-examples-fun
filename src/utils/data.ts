@@ -43,11 +43,20 @@ export class MnistData {
   trainLabels: Uint8Array
   testLabels: Uint8Array
 
+  constructor() {
+    this.datasetImages = new Float32Array()
+    this.datasetLabels = new Uint8Array()
+    this.trainImages = new Float32Array()
+    this.testImages = new Float32Array()
+    this.trainLabels = new Uint8Array()
+    this.testLabels = new Uint8Array()
+  }
+
   load = async () => {
     // Make a request for the MNIST sprited image.
     const img = new Image()
     const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d')!
     const imgRequest = new Promise((resolve, reject) => {
       img.crossOrigin = ''
       img.onload = () => {
@@ -96,7 +105,7 @@ export class MnistData {
     })
 
     const labelsRequest = fetch(MNIST_LABELS_PATH)
-    const [imgResponse, labelsResponse] = await Promise.all([
+    const [imgResponse, labelsResponse]: any[] = await Promise.all([
       imgRequest,
       labelsRequest,
     ])

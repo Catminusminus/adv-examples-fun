@@ -66,7 +66,7 @@ export type ActionType<
   Actions = ActionsType<ActionCreators>
 > = { [Key in keyof Actions]: Actions[Key] }[keyof Actions]
 
-type AppAction =ActionType<typeof actions>
+type AppAction = ActionType<typeof actions>
 
 export const reducer: Reducer<State, AppAction> = (
   state: State = initialState,

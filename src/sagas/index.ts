@@ -18,7 +18,12 @@ import { StateStage } from '../modules'
 import * as tf from '@tensorflow/tfjs'
 import * as Konva from 'konva'
 
-const train = async (data: any, dispatch: any, model: any, onIteration?: any) => {
+const train = async (
+  data: any,
+  dispatch: any,
+  model: any,
+  onIteration?: any,
+) => {
   // Batch size is another important hyperparameter. It defines the number of
   // examples we group together, or batch, between updates to the model's
   // weights during training. A value that is too low will update weights using
@@ -94,6 +99,7 @@ const train = async (data: any, dispatch: any, model: any, onIteration?: any) =>
 const selectAccurateExample = (labels: any[], predictions: any[]) => {
   const indices = labels.map((v, i) => predictions[i] === v)
   const accIndices = labels.map((v, i) => i).filter(index => indices[index])
+
   return accIndices
 }
 
@@ -101,18 +107,18 @@ const formatImage = (image: any) => {
   const [width, height] = [28, 28]
 
   const cnv = document.createElement('canvas')
-  cnv.width = width*3
-  cnv.height = height*3
+  cnv.width = width * 3
+  cnv.height = height * 3
   const ctx = cnv.getContext('2d') as CanvasRenderingContext2D
 
   const imageData = ctx.createImageData(width, height)
   const data = image.dataSync()
   for (let i = 0; i < height * width; ++i) {
-    const j = i * 4;
-    imageData.data[j + 0] = data[i] * 255;
-    imageData.data[j + 1] = data[i] * 255;
-    imageData.data[j + 2] = data[i] * 255;
-    imageData.data[j + 3] = 255;
+    const j = i * 4
+    imageData.data[j + 0] = data[i] * 255
+    imageData.data[j + 1] = data[i] * 255
+    imageData.data[j + 2] = data[i] * 255
+    imageData.data[j + 3] = 255
   }
   console.log(imageData)
   // return imageData
@@ -121,8 +127,8 @@ const formatImage = (image: any) => {
   const ctxBig = cnv.getContext('2d') as CanvasRenderingContext2D
   ctxBig.scale(3, 3)
   // ctxBig.putImageData(imageData, 0, 0)
-  //return createImageBitmap(imageData)
-  ctxBig.drawImage(cnv, 0, 0);
+  // return createImageBitmap(imageData)
+  ctxBig.drawImage(cnv, 0, 0)
 
   return cnv
 }
@@ -135,7 +141,7 @@ async function showPrediction(data: any, dispatch: any, model: any) {
   // from GPU memory after execution without having to call dispose().
   // The tf.tidy callback runs synchronously.
   tf.tidy(() => {
-    const output = model.predict(examples.xs);
+    const output = model.predict(examples.xs)
 
     // tf.argMax() returns the indices of the maximum values in the tensor along
     // a specific axis. Categorical classification tasks like this one often
@@ -149,19 +155,31 @@ async function showPrediction(data: any, dispatch: any, model: any) {
     // dataSync() synchronously downloads the tf.tensor values from the GPU so
     // that we can use them in our normal CPU JavaScript code
     // (for a non-blocking version of this function, use data()).
-    const axis = 1;
-    const labels = Array.from(examples.labels.argMax(axis).dataSync());
-    const predictions = Array.from(output.argMax(axis).dataSync());
+    const axis = 1
+    const labels = Array.from(examples.labels.argMax(axis).dataSync())
+    const predictions = Array.from(output.argMax(axis).dataSync())
     console.log(labels)
     console.log(predictions)
     const accIndices = selectAccurateExample(labels, predictions)
     const index = accIndices[Math.floor(Math.random() * accIndices.length)]
     console.log(index)
-    //dispatch(setImage(bitmap, predictions[index]))
-    dispatch(setImage(formatImage(examples.xs.slice([index, 0], [1, examples.xs.shape[1]]).flatten()), predictions[index], index))
+    // dispatch(setImage(bitmap, predictions[index]))
+    dispatch(
+      setImage(
+        formatImage(
+          examples.xs.slice([index, 0], [1, examples.xs.shape[1]]).flatten(),
+        ),
+        predictions[index],
+        index,
+      ),
+    )
     // ui.showTestResults(examples, predictions, labels);
     const image = examples.xs.slice([index, 0], [1, examples.xs.shape[1]])
-    const loss = (input: any) => tf.metrics.categoricalCrossentropy(examples.labels.slice([index, 0], [1, examples.labels.shape[1]]), model.predict(input))
+    const loss = (input: any) =>
+      tf.metrics.categoricalCrossentropy(
+        examples.labels.slice([index, 0], [1, examples.labels.shape[1]]),
+        model.predict(input),
+      )
     const grad = tf.grad(loss)
     const signed_grad = tf.sign(grad(image))
     const scalar = tf.scalar(0.3, 'float32')
@@ -173,7 +191,17 @@ async function showPrediction(data: any, dispatch: any, model: any) {
     console.log(signed_grad.add(image))
     signed_grad.print()
     dispatch(setPerturbation(formatImage(signed_grad.flatten())))
-    dispatch(setAdvImage(formatImage((signed_grad.mul(scalar).add(image)).flatten()), predictions_adv[0]))
+    dispatch(
+      setAdvImage(
+        formatImage(
+          signed_grad
+            .mul(scalar)
+            .add(image)
+            .flatten(),
+        ),
+        predictions_adv[0],
+      ),
+    )
   })
 }
 
@@ -185,36 +213,35 @@ function* loadData() {
   ])
   const data = new MnistData()
   yield call(data.load)
-  yield all([
-    put(setData(data)),
-    put(setDataState(StateStage.end)),
-  ])
+  yield all([put(setData(data)), put(setDataState(StateStage.end))])
 }
 
 function* trainModel(action: any) {
-  yield all([
-    put(setModelState(StateStage.working)),
-  ])
+  yield all([put(setModelState(StateStage.working))])
   const model = createModel()
   yield call(train, action.payload.data, action.payload.dispatch, model)
-  yield all([
-    put(setModel(model)),
-    put(setModelState(StateStage.end)),
-  ])
+  yield all([put(setModel(model)), put(setModelState(StateStage.end))])
   // yield put(predictImage(action.payload.data, action.payload.dispatch, model))
 }
 
 function* predict(action: any) {
-  yield all([
-    put(setPredicateState(StateStage.working)),
-  ])
-  yield call(showPrediction, action.payload.data, action.payload.dispatch, action.payload.model)
-  yield all([
-    put(setPredicateState(StateStage.end)),
-  ])
+  yield all([put(setPredicateState(StateStage.working))])
+  yield call(
+    showPrediction,
+    action.payload.data,
+    action.payload.dispatch,
+    action.payload.model,
+  )
+  yield all([put(setPredicateState(StateStage.end))])
 }
 
-const makePerturbation = async (data: any, dispatch: any, label: any, index: any, model: any) => {
+const makePerturbation = async (
+  data: any,
+  dispatch: any,
+  label: any,
+  index: any,
+  model: any,
+) => {
   const testExamples = 100
   const examples = data.getTestData(testExamples)
   tf.tidy(() => {
@@ -230,17 +257,20 @@ const makePerturbation = async (data: any, dispatch: any, label: any, index: any
     // dataSync() synchronously downloads the tf.tensor values from the GPU so
     // that we can use them in our normal CPU JavaScript code
     // (for a non-blocking version of this function, use data()).
-    const axis = 1;
+    const axis = 1
 
     const image = examples.xs.slice([index, 0], [1, examples.xs.shape[1]])
-    const loss = (input: any) => tf.metrics.categoricalCrossentropy(label, model.predict(input))
+    const loss = (input: any) =>
+      tf.metrics.categoricalCrossentropy(label, model.predict(input))
     const grad = tf.grad(loss)
     const signed_grad = tf.sign(grad(image))
     const output = model.predict(image)
     const predictions = Array.from(output.argMax(axis).dataSync())
 
     dispatch(setPerturbation(formatImage(signed_grad.flatten())))
-    dispatch(setAdvImage(formatImage((signed_grad + image).flatten()), predictions[0]))
+    dispatch(
+      setAdvImage(formatImage((signed_grad + image).flatten()), predictions[0]),
+    )
     // ui.showTestResults(examples, predictions, labels);
   })
 }
