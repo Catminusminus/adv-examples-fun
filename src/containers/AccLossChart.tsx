@@ -2,25 +2,20 @@ import * as React from 'react'
 import Chart from '../components/Chart'
 import { useSelector } from 'react-redux'
 import { State } from '../modules'
+const accSelector = (state: State) => state.acc
 const lossSelector = (state: State) => state.loss
 
-const LossChart = () => {
+const AccLossChart = () => {
+  const acc = useSelector(accSelector)
   const loss = useSelector(lossSelector)
 
-  const data = loss.map((v, i) => ({
+  const data = acc.map((v, i) => ({
     miniEpoch: i,
-    loss: v,
+    acc: v,
+    loss: loss[i],
   }))
 
-  return (
-    <Chart
-      data={data}
-      valueField="loss"
-      argumentField="miniEpoch"
-      color="blue"
-      title="LOSS"
-    />
-  )
+  return <Chart data={data} dataKey="miniEpoch" />
 }
 
-export default LossChart
+export default AccLossChart
