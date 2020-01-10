@@ -15,6 +15,10 @@
  * =============================================================================
  */
 
+/**
+ * Modified by Catminusminus
+ */
+
 import { all, put, takeEvery, call } from 'redux-saga/effects'
 import { MnistData } from '../utils/data'
 import { createModel } from '../utils/model'
@@ -29,14 +33,17 @@ import {
   setImage,
   setPerturbation,
   setAdvImage,
+  predictImage,
+  trainModel as trainModelAction,
 } from '../modules/actions'
 import { StateStage } from '../modules'
 import * as tf from '@tensorflow/tfjs'
+import { Dispatch } from 'redux'
 
 const train = async (
-  data: any,
-  dispatch: any,
-  model: any,
+  data: MnistData,
+  dispatch: Dispatch<any>,
+  model: tf.Sequential,
   onIteration?: any,
 ) => {
   const batchSize = 320
@@ -99,11 +106,115 @@ const formatImage = (image: any) => {
   return cnv
 }
 
-async function showPrediction(data: any, dispatch: any, model: any) {
+const deepFoolAttack = (
+  image: any,
+  model: tf.Sequential,
+  axis: number,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _: any,
+) => {
+  const x0 = image
+  const xArr = [x0]
+  const rArr = []
+  const kHatX0 = Array.from(
+    (model.predict(xArr[0]) as tf.Tensor<tf.Rank>).argMax(axis).dataSync(),
+  )[0]
+  for (let i = 0; i < 10; i++) {
+    const kHatXI = Array.from(
+      (model.predict(xArr[i]) as tf.Tensor<tf.Rank>).argMax(axis).dataSync(),
+    )[0]
+    if (kHatX0 !== kHatXI) {
+      break
+    }
+    const wKArr: any[] = []
+    const fKArr: any[] = []
+    for (let k = 0; k < 10; k++) {
+      if (k === kHatX0) {
+        continue
+      }
+      const fK = (x: any) =>
+        (model.predict(x) as tf.Tensor<tf.Rank>)
+          .flatten()
+          .gather(tf.tensor1d([k], 'int32'))
+      const fK0 = (x: any) =>
+        (model.predict(x) as tf.Tensor<tf.Rank>)
+          .flatten()
+          .gather(tf.tensor1d([kHatX0], 'int32'))
+      const wKP = tf
+        .grad(fK)(xArr[i])
+        .sub(tf.grad(fK0)(xArr[i]))
+      wKArr.push(wKP)
+      const fKP = (model.predict(xArr[i]) as tf.Tensor<tf.Rank>)
+        .flatten()
+        .gather(tf.tensor1d([k], 'int32'))
+        .sub(
+          (model.predict(xArr[i]) as tf.Tensor<tf.Rank>)
+            .flatten()
+            .gather(tf.tensor1d([kHatX0], 'int32')),
+        )
+      fKArr.push(fKP)
+    }
+    const coefArr: any[] = wKArr.map(
+      (v, i) =>
+        Array.from(
+          fKArr[i]
+            .abs()
+            .div(v.norm().add(tf.scalar(0.1)))
+            .dataSync(),
+        )[0],
+    )
+    const coef = tf.tensor1d(coefArr).argMax()
+    const rI = tf
+      .tensor1d(coefArr)
+      .max()
+      .mul(
+        wKArr[Array.from(coef.dataSync())[0]].div(
+          wKArr[Array.from(coef.dataSync())[0]].norm(),
+        ),
+      )
+    rArr.push(rI)
+    xArr.push(xArr[i].add(rI))
+  }
+  const reducer_ = (
+    accumulator: tf.Tensor<tf.Rank>,
+    currentValue: tf.Tensor<tf.Rank>,
+  ) => accumulator.add(currentValue)
+  const perturbation = rArr.reduce(reducer_)
+
+  return perturbation
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const fgsmAttack = (image: any, model: any, axis: number, loss: any) => {
+  const grad = tf.grad(loss)
+  const signedGrad = tf.sign(grad(image))
+  const scalar = tf.scalar(0.3, 'float32')
+
+  return signedGrad.mul(scalar)
+}
+
+const adversarialAttackDict: {
+  [index: string]: (
+    image: any,
+    model: tf.Sequential,
+    axis: number,
+    loss: any,
+  ) => tf.Tensor<tf.Rank>
+} = {
+  DeepFool: deepFoolAttack,
+  FGSM: fgsmAttack,
+}
+
+async function showPrediction(
+  data: MnistData,
+  dispatch: Dispatch<any>,
+  model: tf.Sequential,
+  attack: string,
+) {
   const testExamples = 100
   const examples = data.getTestData(testExamples)
   tf.tidy(() => {
-    const output = model.predict(examples.xs)
+    const output = model.predict(examples.xs) as tf.Tensor<tf.Rank>
     const axis = 1
     const labels = Array.from(examples.labels.argMax(axis).dataSync())
     const predictions = Array.from(output.argMax(axis).dataSync())
@@ -122,24 +233,19 @@ async function showPrediction(data: any, dispatch: any, model: any) {
     const loss = (input: any) =>
       tf.metrics.categoricalCrossentropy(
         examples.labels.slice([index, 0], [1, examples.labels.shape[1]]),
-        model.predict(input),
+        model.predict(input) as tf.Tensor<tf.Rank>,
       )
-    const grad = tf.grad(loss)
-    const signedGrad = tf.sign(grad(image))
-    const scalar = tf.scalar(0.3, 'float32')
-
-    const outputAdv = model.predict(signedGrad.mul(scalar).add(image))
+    const perturbation = adversarialAttackDict[attack](image, model, axis, loss)
+    const outputAdv = model.predict(perturbation.add(image)) as tf.Tensor<
+      tf.Rank
+    >
     const predictionsAdv = Array.from(outputAdv.argMax(axis).dataSync())
-    dispatch(setPerturbation(formatImage(signedGrad.flatten())))
+    dispatch(setPerturbation(formatImage(perturbation.flatten())))
     dispatch(
       setAdvImage(
-        formatImage(
-          signedGrad
-            .mul(scalar)
-            .add(image)
-            .flatten(),
-        ),
+        formatImage(perturbation.add(image).flatten()),
         predictionsAdv[0],
+        attack,
       ),
     )
   })
@@ -156,20 +262,21 @@ function* loadData() {
   yield all([put(setData(data)), put(setDataState(StateStage.end))])
 }
 
-function* trainModel(action: any) {
+function* trainModel(action: ReturnType<typeof trainModelAction>) {
   yield all([put(setModelState(StateStage.working))])
   const model = createModel()
   yield call(train, action.payload.data, action.payload.dispatch, model)
   yield all([put(setModel(model)), put(setModelState(StateStage.end))])
 }
 
-function* predict(action: any) {
+function* predict(action: ReturnType<typeof predictImage>) {
   yield all([put(setPredicateState(StateStage.working))])
   yield call(
     showPrediction,
     action.payload.data,
     action.payload.dispatch,
     action.payload.model,
+    action.payload.attack,
   )
   yield all([put(setPredicateState(StateStage.end))])
 }

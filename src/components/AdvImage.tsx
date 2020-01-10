@@ -7,6 +7,9 @@ interface Props {
   advImage: any
   label: any
   advLabel: any
+  advAttack: string
+  width: number
+  height: number
 }
 
 const AdvImageComponent: React.FC<Props> = ({
@@ -15,9 +18,18 @@ const AdvImageComponent: React.FC<Props> = ({
   advImage,
   label,
   advLabel,
+  advAttack,
+  width,
+  height,
 }) => (
-  <Stage width={window.innerWidth} height={window.innerHeight}>
+  <Stage width={width} height={height}>
     <Layer>
+      <Text
+        text={`attack: ${advAttack}`}
+        fontSize={16}
+        x={window.innerWidth / 2 - 84 - 100 - 42 - 200}
+        y={20 + 42}
+      />
       <Text
         text={`prediction: ${label}`}
         fontSize={16}
@@ -30,12 +42,6 @@ const AdvImageComponent: React.FC<Props> = ({
         y={20 + 42}
         points={[0, 0, 25, 0, 25, 25, 25, 0, 50, 0, 25, 0, 25, -25]}
         stroke="black"
-      />
-      <Text
-        text={`0.3 * `}
-        fontSize={16}
-        x={window.innerWidth / 2 - 42 - 36}
-        y={20 + 42 - 8}
       />
       <Text
         text={`perturbation`}

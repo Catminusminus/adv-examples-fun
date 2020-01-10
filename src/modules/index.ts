@@ -1,5 +1,7 @@
 import { Reducer, AnyAction } from 'redux'
 import * as actions from './actions'
+import { MnistData } from '../utils/data'
+import * as tf from '@tensorflow/tfjs'
 
 export enum StateStage {
   init,
@@ -13,8 +15,8 @@ export interface State {
   loss: number[]
   acc: number[]
   index: number | null
-  data: any
-  model: any
+  data: MnistData | null
+  model: tf.Sequential | null
   dataState: StateStage
   modelState: StateStage
   accImage: {
@@ -27,6 +29,7 @@ export interface State {
   advImage: {
     image: any
     label: any
+    attack: string
   }
 }
 
@@ -50,6 +53,7 @@ const initialState: State = {
   advImage: {
     image: null,
     label: null,
+    attack: '',
   },
 }
 
