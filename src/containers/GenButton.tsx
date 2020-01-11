@@ -82,18 +82,21 @@ const GenButton = () => {
         message="Generate Adversarial Examples"
         successMessage="Generated. Try again?"
       />
-      {advImage && origImage && predicateState === StateStage.end && (
-        <AdvImage
-          image={origImage.image}
-          perturbation={perturbation}
-          advImage={advImage}
-          label={origImage.label}
-          advLabel={advImage.label}
-          advAttack={advImage.attack}
-          width={width}
-          height={height}
-        />
-      )}
+      {perturbation &&
+        advImage &&
+        origImage &&
+        predicateState === StateStage.end && (
+          <AdvImage
+            image={origImage.image}
+            perturbation={perturbation}
+            advImage={advImage.image}
+            label={origImage.label}
+            advLabel={advImage.label}
+            advAttack={advImage.attack}
+            width={width}
+            height={height}
+          />
+        )}
     </>
   )
 }

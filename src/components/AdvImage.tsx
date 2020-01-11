@@ -2,11 +2,11 @@ import * as React from 'react'
 import { Stage, Layer, Image, Text, Line } from 'react-konva'
 
 interface Props {
-  perturbation: any
-  image: any
-  advImage: any
-  label: any
-  advLabel: any
+  perturbation: HTMLCanvasElement
+  image: HTMLCanvasElement
+  advImage: HTMLCanvasElement
+  label: number
+  advLabel: number
   advAttack: string
   width: number
   height: number

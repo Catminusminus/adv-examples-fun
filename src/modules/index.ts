@@ -20,15 +20,15 @@ export interface State {
   dataState: StateStage
   modelState: StateStage
   accImage?: {
-    image: any
-    label: any
+    image: HTMLCanvasElement
+    label: number
     index: number
   }
   predicateState: StateStage
   perturbation?: HTMLCanvasElement
   advImage?: {
-    image: any
-    label: any
+    image: HTMLCanvasElement
+    label: number
     attack: string
   }
 }

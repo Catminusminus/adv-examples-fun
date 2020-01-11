@@ -74,14 +74,14 @@ const train = async (
   })
 }
 
-const selectAccurateExample = (labels: any[], predictions: any[]) => {
+const selectAccurateExample = (labels: number[], predictions: number[]) => {
   const indices = labels.map((v, i) => predictions[i] === v)
   const accIndices = labels.map((v, i) => i).filter(index => indices[index])
 
   return accIndices
 }
 
-const formatImage = (image: any) => {
+const formatImage = (image: tf.Tensor<tf.Rank>) => {
   const [width, height] = [28, 28]
 
   const cnv = document.createElement('canvas')
@@ -107,7 +107,7 @@ const formatImage = (image: any) => {
 }
 
 const deepFoolAttack = (
-  image: any,
+  image: tf.Tensor<tf.Rank>,
   model: tf.Sequential,
   axis: number,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -185,7 +185,12 @@ const deepFoolAttack = (
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-const fgsmAttack = (image: any, model: any, axis: number, loss: any) => {
+const fgsmAttack = (
+  image: tf.Tensor<tf.Rank>,
+  model: tf.Sequential,
+  axis: number,
+  loss: any,
+) => {
   const grad = tf.grad(loss)
   const signedGrad = tf.sign(grad(image))
   const scalar = tf.scalar(0.3, 'float32')
@@ -195,7 +200,7 @@ const fgsmAttack = (image: any, model: any, axis: number, loss: any) => {
 
 const adversarialAttackDict: {
   [index: string]: (
-    image: any,
+    image: tf.Tensor<tf.Rank>,
     model: tf.Sequential,
     axis: number,
     loss: any,
@@ -230,7 +235,7 @@ async function showPrediction(
       ),
     )
     const image = examples.xs.slice([index, 0], [1, examples.xs.shape[1]])
-    const loss = (input: any) =>
+    const loss = (input: tf.Tensor<tf.Rank>) =>
       tf.metrics.categoricalCrossentropy(
         examples.labels.slice([index, 0], [1, examples.labels.shape[1]]),
         model.predict(input) as tf.Tensor<tf.Rank>,

@@ -65,7 +65,11 @@ export const trainModel = (data: MnistData, dispatch: Dispatch<any>) =>
     },
   } as const)
 
-export const setImage = (image: any, label: any, index: number) =>
+export const setImage = (
+  image: HTMLCanvasElement,
+  label: number,
+  index: number,
+) =>
   ({
     type: 'SET_IMAGE',
     payload: {
@@ -103,7 +107,11 @@ export const setPerturbation = (perturbation: HTMLCanvasElement) =>
     payload: perturbation,
   } as const)
 
-export const setAdvImage = (image: any, label: any, attack: string) =>
+export const setAdvImage = (
+  image: HTMLCanvasElement,
+  label: number,
+  attack: string,
+) =>
   ({
     type: 'SET_ADVIMAGE',
     payload: {
