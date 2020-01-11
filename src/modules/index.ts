@@ -1,5 +1,7 @@
 import { Reducer, AnyAction } from 'redux'
 import * as actions from './actions'
+import { MnistData } from '../utils/data'
+import * as tf from '@tensorflow/tfjs'
 
 export enum StateStage {
   init,
@@ -12,21 +14,22 @@ export interface State {
   currentEpoch: number
   loss: number[]
   acc: number[]
-  index: number | null
-  data: any
-  model: any
+  index?: number
+  data?: MnistData
+  model?: tf.Sequential
   dataState: StateStage
   modelState: StateStage
-  accImage: {
-    image: any
-    label: any
+  accImage?: {
+    image: HTMLCanvasElement
+    label: number
     index: number
   }
   predicateState: StateStage
-  perturbation: any
-  advImage: {
-    image: any
-    label: any
+  perturbation?: HTMLCanvasElement
+  advImage?: {
+    image: HTMLCanvasElement
+    label: number
+    attack: string
   }
 }
 
@@ -35,22 +38,9 @@ const initialState: State = {
   currentEpoch: 0,
   loss: [],
   acc: [],
-  index: null,
-  data: null,
-  model: null,
   dataState: StateStage.init,
   modelState: StateStage.init,
-  accImage: {
-    image: null,
-    label: null,
-    index: 0,
-  },
   predicateState: StateStage.init,
-  perturbation: null,
-  advImage: {
-    image: null,
-    label: null,
-  },
 }
 
 export type ActionsType<ActionCreators extends object> = {
