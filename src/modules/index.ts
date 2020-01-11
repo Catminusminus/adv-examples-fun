@@ -14,19 +14,19 @@ export interface State {
   currentEpoch: number
   loss: number[]
   acc: number[]
-  index: number | null
-  data: MnistData | null
-  model: tf.Sequential | null
+  index?: number
+  data?: MnistData
+  model?: tf.Sequential
   dataState: StateStage
   modelState: StateStage
-  accImage: {
+  accImage?: {
     image: any
     label: any
     index: number
   }
   predicateState: StateStage
-  perturbation: any
-  advImage: {
+  perturbation?: HTMLCanvasElement
+  advImage?: {
     image: any
     label: any
     attack: string
@@ -38,23 +38,9 @@ const initialState: State = {
   currentEpoch: 0,
   loss: [],
   acc: [],
-  index: null,
-  data: null,
-  model: null,
   dataState: StateStage.init,
   modelState: StateStage.init,
-  accImage: {
-    image: null,
-    label: null,
-    index: 0,
-  },
   predicateState: StateStage.init,
-  perturbation: null,
-  advImage: {
-    image: null,
-    label: null,
-    attack: '',
-  },
 }
 
 export type ActionsType<ActionCreators extends object> = {

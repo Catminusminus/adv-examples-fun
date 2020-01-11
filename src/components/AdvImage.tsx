@@ -38,7 +38,7 @@ const AdvImageComponent: React.FC<Props> = ({
       />
       <Image image={image} x={window.innerWidth / 2 - 42 - 84 - 100} y={20} />
       <Line
-        x={window.innerWidth / 2 - 42 - 84 - 4}
+        x={window.innerWidth / 2 - 42 - 84 + 39 - 25}
         y={20 + 42}
         points={[0, 0, 25, 0, 25, 25, 25, 0, 50, 0, 25, 0, 25, -25]}
         stroke="black"

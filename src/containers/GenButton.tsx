@@ -33,12 +33,9 @@ const GenButton = () => {
   const data = useSelector(modelDataSelector)
   const modelState = useSelector(modelStateSelector)
   const predicateState = useSelector(predicteStateSelector)
-  const { image: advImage, label: advLabel, attack: advAttack } = useSelector(
-    advSelector,
-  )
+  const advImage = useSelector(advSelector)
+  const origImage = useSelector(imageSelector)
   const perturbation = useSelector(perturbationSelector)
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { image, label, index: _ } = useSelector(imageSelector)
   const [attack, setAttack] = React.useState('FGSM')
   const dispatch = useDispatch()
   const inputLabel = React.useRef<HTMLLabelElement>(null)
@@ -85,14 +82,14 @@ const GenButton = () => {
         message="Generate Adversarial Examples"
         successMessage="Generated. Try again?"
       />
-      {predicateState === StateStage.end && (
+      {advImage && origImage && predicateState === StateStage.end && (
         <AdvImage
-          image={image}
+          image={origImage.image}
           perturbation={perturbation}
           advImage={advImage}
-          label={label}
-          advLabel={advLabel}
-          advAttack={advAttack}
+          label={origImage.label}
+          advLabel={advImage.label}
+          advAttack={advImage.attack}
           width={width}
           height={height}
         />

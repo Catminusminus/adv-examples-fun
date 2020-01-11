@@ -97,7 +97,7 @@ export const predictImage = (
     },
   } as const)
 
-export const setPerturbation = (perturbation: any) =>
+export const setPerturbation = (perturbation: HTMLCanvasElement) =>
   ({
     type: 'SET_PERTURBATION',
     payload: perturbation,
