@@ -14,6 +14,7 @@ Attention! The above site is heavy. If you see a blank page, reload your browser
 Currently, you can try the below attaks.
 - FGSM
 - DeepFool
+- NewtonFool
 
 ## Issues
 Currently, the implementation of DeepFool attack is slightly modified from the original paper. This is because I found that the denominator of some formulas can be so small that the perturbation is too big. I am investigating this issue.
@@ -40,7 +41,27 @@ DeepFool is described by
     eprint={1511.04599},
     archivePrefix={arXiv},
     primaryClass={cs.LG}
-}
+}.
+```
+
+NewtonFool is described by
+```
+@inproceedings{10.1145/3134600.3134635,
+author = {Jang, Uyeong and Wu, Xi and Jha, Somesh},
+title = {Objective Metrics and Gradient Descent Algorithms for Adversarial Examples in Machine Learning},
+year = {2017},
+isbn = {9781450353458},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3134600.3134635},
+doi = {10.1145/3134600.3134635},
+booktitle = {Proceedings of the 33rd Annual Computer Security Applications Conference},
+pages = {262–277},
+numpages = {16},
+keywords = {Adversarial Examples, Machine Learning},
+location = {Orlando, FL, USA},
+series = {ACSAC 2017}
+}.
 ```
 
 `src/utils/data.ts`, `src/utils/model.ts` and `src/sagas/index.ts` contain the modified version of the code from [TensorFlow.js Example: Training MNIST](https://github.com/tensorflow/tfjs-examples/tree/master/mnist). The license file is `LICENSE.original`.
