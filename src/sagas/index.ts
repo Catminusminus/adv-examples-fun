@@ -216,8 +216,9 @@ const newtonFoolAttack = (
       .gather(tf.tensor1d([l], 'int32'))
   for (let i = 0; i < 50; i++) {
     if (
-      (model.predict(image) as tf.Tensor<tf.Rank>).argMax(axis) ===
-      (model.predict(xArr[i]) as tf.Tensor<tf.Rank>).argMax(axis)
+      Array.from(
+        (model.predict(xArr[i]) as tf.Tensor<tf.Rank>).argMax(axis).dataSync(),
+      )[0] !== l
     ) {
       break
     }
