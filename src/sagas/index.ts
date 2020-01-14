@@ -198,6 +198,62 @@ const fgsmAttack = (
   return signedGrad.mul(scalar)
 }
 
+const newtonFoolAttack = (
+  image: tf.Tensor<tf.Rank>,
+  model: tf.Sequential,
+  axis: number,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  loss: any,
+) => {
+  const l = Array.from(
+    (model.predict(image) as tf.Tensor<tf.Rank>).argMax(axis).dataSync(),
+  )[0]
+  const dArr = []
+  const xArr = [image]
+  const f = (x: any) =>
+    (model.predict(x) as tf.Tensor<tf.Rank>)
+      .flatten()
+      .gather(tf.tensor1d([l], 'int32'))
+  for (let i = 0; i < 50; i++) {
+    if (
+      Array.from(
+        (model.predict(xArr[i]) as tf.Tensor<tf.Rank>).argMax(axis).dataSync(),
+      )[0] !== l
+    ) {
+      break
+    }
+    const delta = tf.minimum(
+      tf
+        .scalar(0.01)
+        .mul(image.norm())
+        .mul(
+          tf
+            .grad(f)(xArr[i])
+            .norm(),
+        ),
+      (model.predict(xArr[i]) as tf.Tensor<tf.Rank>).max().sub(tf.scalar(0.1)),
+    )
+    const dI = delta
+      .mul(tf.grad(f)(xArr[i]))
+      .div(
+        tf
+          .grad(f)(xArr[i])
+          .norm()
+          .pow(tf.scalar(2).toInt()),
+      )
+      .mul(tf.scalar(-1))
+    xArr.push(xArr[i].add(dI))
+    dArr.push(dI)
+  }
+  const reducer_ = (
+    accumulator: tf.Tensor<tf.Rank>,
+    currentValue: tf.Tensor<tf.Rank>,
+  ) => accumulator.add(currentValue)
+  const perturbation = dArr.reduce(reducer_)
+
+  return perturbation
+}
+
 const adversarialAttackDict: {
   [index: string]: (
     image: tf.Tensor<tf.Rank>,
@@ -208,6 +264,7 @@ const adversarialAttackDict: {
 } = {
   DeepFool: deepFoolAttack,
   FGSM: fgsmAttack,
+  NewtonFool: newtonFoolAttack,
 }
 
 async function showPrediction(

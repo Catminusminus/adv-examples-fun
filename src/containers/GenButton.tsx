@@ -70,6 +70,7 @@ const GenButton = () => {
         >
           <MenuItem value="FGSM">FGSM</MenuItem>
           <MenuItem value="DeepFool">DeepFool</MenuItem>
+          <MenuItem value="NewtonFool">NewtonFool</MenuItem>
         </Select>
       </FormControl>
       <Button
