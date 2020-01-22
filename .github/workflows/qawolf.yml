@@ -23,14 +23,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - run: npm install
+      - run: npm ci
 
       - name: Start local server
-        run: npm run dev & npx wait-on http://localhost:1234
+        run: npx parcel src/index.html & npx wait-on http://localhost:1234
 
       - run: npx qawolf test
         env:
           QAW_ARTIFACT_PATH: ${{ github.workspace }}/artifacts
+
         #   # configure tests with environment variables
         #   # https://docs.qawolf.com/docs/configuration
         #   QAW_SLEEP_MS: 0
