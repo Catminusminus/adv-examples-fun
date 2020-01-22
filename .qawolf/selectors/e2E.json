@@ -1,0 +1,22 @@
+[
+ {
+  "index": 0,
+  "html": {
+   "ancestors": [
+    "<div class=\"makeStyles-wrapper-208\"></div>",
+    "<div class=\"MuiGrid-root MuiGrid-container MuiGrid-item MuiGrid-justify-xs-center MuiGrid-grid-xs-12\"></div>"
+   ],
+   "node": "<button class=\"MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary\" tabindex=\"0\" type=\"button\" innertext=\"LOAD DATA\"><span class=\"MuiButton-label\">Load Data</span><span class=\"MuiTouchRipple-root\"><span class=\"MuiTouchRipple-ripple MuiTouchRipple-rippleVisible\" style=\"width: 162.086px; height: 162.086px; top: -66.0432px; left: -4.0432px;\"><span class=\"MuiTouchRipple-child MuiTouchRipple-childLeaving\"></span></span></span></button>"
+  }
+ },
+ {
+  "index": 1,
+  "html": {
+   "ancestors": [
+    "<div class=\"makeStyles-wrapper-208\"></div>",
+    "<div class=\"MuiGrid-root MuiGrid-container MuiGrid-item MuiGrid-justify-xs-center MuiGrid-grid-xs-12\"></div>"
+   ],
+   "node": "<button class=\"MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPrimary\" tabindex=\"0\" type=\"button\" innertext=\"TRAIN MODEL\"><span class=\"MuiButton-label\">Train Model</span><span class=\"MuiTouchRipple-root\"><span class=\"MuiTouchRipple-ripple MuiTouchRipple-rippleVisible\" style=\"width: 162.542px; height: 162.542px; top: -56.2712px; left: -5.27115px;\"><span class=\"MuiTouchRipple-child MuiTouchRipple-childLeaving\"></span></span></span></button>"
+  }
+ }
+]
