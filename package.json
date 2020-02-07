@@ -50,7 +50,7 @@
     "eslint-plugin-standard": "4.0.1",
     "husky": "3.1.0",
     "lint-staged": "9.5.0",
-    "netlify-cli": "2.31.0",
+    "netlify-cli": "2.32.0",
     "npm-check-updates": "3.2.2",
     "parcel-bundler": "1.12.4",
     "prettier": "1.19.1",
