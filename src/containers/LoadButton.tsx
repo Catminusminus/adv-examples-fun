@@ -1,7 +1,7 @@
 import * as React from 'react'
 import Button from '../components/Button'
 import { State, StateStage } from '../modules'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux-worker'
 
 const dataStateSelector = (state: State) => state.dataState
 
