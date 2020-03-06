@@ -1,4 +1,3 @@
-import { Dispatch } from 'redux'
 import { StateStage } from './index'
 import { MnistData } from '../utils/data'
 import * as tf from '@tensorflow/tfjs'
@@ -56,24 +55,15 @@ export const setModelState = (modelState: StateStage) =>
     payload: modelState,
   } as const)
 
-export const trainModel = (data: MnistData, dispatch: Dispatch<any>) =>
+export const trainModel = () =>
   ({
     type: 'TRAIN_MODEL',
-    payload: {
-      data,
-      dispatch,
-    },
   } as const)
 
-export const setImage = (
-  image: HTMLCanvasElement,
-  label: number,
-  index: number,
-) =>
+export const setImage = (label: number, index: number) =>
   ({
     type: 'SET_IMAGE',
     payload: {
-      image,
       label,
       index,
     },
@@ -86,36 +76,30 @@ export const setPredicateState = (predicateState: StateStage) =>
   } as const)
 
 export const predictImage = (
-  data: MnistData,
-  dispatch: Dispatch<any>,
-  model: tf.Sequential,
   attack: string,
+  originCanvas: OffscreenCanvas,
+  perturbationCanvas: OffscreenCanvas,
+  advCanvas: OffscreenCanvas,
 ) =>
   ({
     type: 'PREDICT',
     payload: {
-      data,
-      dispatch,
-      model,
       attack,
+      originCanvas,
+      perturbationCanvas,
+      advCanvas,
     },
   } as const)
 
-export const setPerturbation = (perturbation: HTMLCanvasElement) =>
+export const setPerturbation = () =>
   ({
     type: 'SET_PERTURBATION',
-    payload: perturbation,
   } as const)
 
-export const setAdvImage = (
-  image: HTMLCanvasElement,
-  label: number,
-  attack: string,
-) =>
+export const setAdvImage = (label: number, attack: string) =>
   ({
     type: 'SET_ADVIMAGE',
     payload: {
-      image,
       label,
       attack,
     },

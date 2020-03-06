@@ -4,15 +4,10 @@ import Grid from '@material-ui/core/Grid'
 import AccLossChart from './containers/AccLossChart'
 import LoadButton from './containers/LoadButton'
 import TrainButton from './containers/TrainButton'
-import { Provider } from 'react-redux'
-import { createStore, applyMiddleware } from 'redux'
-import { reducer } from './modules'
-import createSagaMiddleware from 'redux-saga'
-import rootSaga from './sagas'
-// import { composeWithDevTools } from 'redux-devtools-extension'
 import GenButton from './containers/GenButton'
 import Header from './components/Header'
 import { makeStyles, Theme } from '@material-ui/core/styles'
+import { getProvider } from 'react-redux-worker'
 
 const useStyles = makeStyles((theme: Theme) => ({
   grid: {
@@ -23,16 +18,14 @@ const useStyles = makeStyles((theme: Theme) => ({
   },
 }))
 
-const sagaMiddleware = createSagaMiddleware()
-// If you use the next line, your browser will crash
-// const store = createStore(reducer, composeWithDevTools(applyMiddleware(sagaMiddleware)))
-const store = createStore(reducer, applyMiddleware(sagaMiddleware))
-sagaMiddleware.run(rootSaga)
+const worker = new Worker('./worker/worker.ts')
+const ProxyProvider = getProvider(worker)
+
 const App = () => {
   const classes = useStyles()
 
   return (
-    <Provider store={store}>
+    <ProxyProvider>
       <Grid container spacing={3} justify="center" className={classes.grid}>
         <Header />
         <Grid container item xs={12} justify="center">
@@ -48,7 +41,7 @@ const App = () => {
           <GenButton />
         </Grid>
       </Grid>
-    </Provider>
+    </ProxyProvider>
   )
 }
 

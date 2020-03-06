@@ -19,60 +19,106 @@
  * Modified by Catminusminus
  */
 
-import { all, put, takeEvery, call } from 'redux-saga/effects'
+import { all, put, takeEvery, call, take, fork } from 'redux-saga/effects'
 import { MnistData } from '../utils/data'
 import { createModel } from '../utils/model'
 import {
   setDataState,
   setModelState,
   setPredicateState,
-  setData,
-  setModel,
   setLoss,
   setAcc,
   setImage,
   setPerturbation,
   setAdvImage,
   predictImage,
-  trainModel as trainModelAction,
 } from '../modules/actions'
 import { StateStage } from '../modules'
 import * as tf from '@tensorflow/tfjs'
-import { Dispatch } from 'redux'
+import { eventChannel } from 'redux-saga'
+import EventEmitter from 'events'
 
-const train = async (
-  data: MnistData,
-  dispatch: Dispatch<any>,
-  model: tf.Sequential,
-  onIteration?: any,
-) => {
-  const batchSize = 320
-  const validationSplit = 0.15
-  const trainEpochs = 1
-  const trainData = data.getTrainData()
+function* setLossAndAccChannel(lossAndAcc: any) {
+  const chan = eventChannel(emitter => {
+    lossAndAcc.on('logs', (logs: any) => emitter(logs))
 
-  await model.fit(trainData.xs, trainData.labels, {
-    batchSize,
-    validationSplit,
-    epochs: trainEpochs,
-    callbacks: {
-      onBatchEnd: async (batch: any, logs: any) => {
-        // eslint-disable-next-line no-console
-        console.log(`batchend loss:${logs.loss} acc:${logs.acc}`)
-        dispatch(setLoss(logs.loss))
-        dispatch(setAcc(logs.acc))
-        if (onIteration && batch % 10 === 0) {
-          onIteration('onBatchEnd', batch, logs)
-        }
-        await tf.nextFrame()
-      },
-      onEpochEnd: async () => {
-        // eslint-disable-next-line no-console
-        console.log('epochend')
-      },
-    },
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    return () => {}
   })
+  while (true) {
+    const { loss, acc } = yield take(chan)
+    yield all([put(setLoss(loss)), put(setAcc(acc))])
+  }
 }
+
+function* generalPutChannel(general: any, msg: string) {
+  const chan = eventChannel(emitter => {
+    general.on(msg, (action: any) => emitter(action))
+
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    return () => {}
+  })
+  while (true) {
+    const action = yield take(chan)
+    yield put(action)
+  }
+}
+
+const putChannel = (msg: string) => (general: any) =>
+  generalPutChannel(general, msg)
+
+const emitter = new EventEmitter()
+
+export class Model {
+  data: MnistData
+  model: tf.Sequential
+  constructor() {
+    this.data = new MnistData()
+    this.model = createModel()
+  }
+
+  getTestData(numExamples: number) {
+    return this.data.getTestData(numExamples)
+  }
+
+  predict(arg: any) {
+    return this.model.predict(arg)
+  }
+
+  async load() {
+    // eslint-disable-next-line no-console
+    console.log('loading data...')
+    await this.data.load()
+  }
+
+  async train() {
+    const batchSize = 320
+    const validationSplit = 0.15
+    const trainEpochs = 1
+    const trainData = this.data.getTrainData()
+    // eslint-disable-next-line no-console
+    console.log('model training start...')
+
+    await this.model.fit(trainData.xs, trainData.labels, {
+      batchSize,
+      validationSplit,
+      epochs: trainEpochs,
+      callbacks: {
+        onBatchEnd: async (batch: any, logs: any) => {
+          emitter.emit('logs', logs)
+          // eslint-disable-next-line no-console
+          console.log(`batchend loss:${logs.loss} acc:${logs.acc}`)
+        },
+        onEpochEnd: async () => {
+          // eslint-disable-next-line no-console
+          console.log('epochend')
+        },
+      },
+    })
+  }
+}
+
+const model = new Model()
 
 const selectAccurateExample = (labels: number[], predictions: number[]) => {
   const indices = labels.map((v, i) => predictions[i] === v)
@@ -81,14 +127,9 @@ const selectAccurateExample = (labels: number[], predictions: number[]) => {
   return accIndices
 }
 
-const formatImage = (image: tf.Tensor<tf.Rank>) => {
+const formatImage = (image: tf.Tensor<tf.Rank>, canvas: OffscreenCanvas) => {
   const [width, height] = [28, 28]
-
-  const cnv = document.createElement('canvas')
-  cnv.width = width * 3
-  cnv.height = height * 3
-  const ctx = cnv.getContext('2d') as CanvasRenderingContext2D
-
+  const ctx = canvas.getContext('2d') as OffscreenCanvasRenderingContext2D
   const imageData = ctx.createImageData(width, height)
   const data = image.dataSync()
   for (let i = 0; i < height * width; ++i) {
@@ -99,16 +140,14 @@ const formatImage = (image: tf.Tensor<tf.Rank>) => {
     imageData.data[j + 3] = 255
   }
   ctx.putImageData(imageData, 0, 0)
-  const ctxBig = cnv.getContext('2d') as CanvasRenderingContext2D
+  const ctxBig = canvas.getContext('2d') as OffscreenCanvasRenderingContext2D
   ctxBig.scale(3, 3)
-  ctxBig.drawImage(cnv, 0, 0)
-
-  return cnv
+  ctxBig.drawImage(canvas, 0, 0)
 }
 
 const deepFoolAttack = (
   image: tf.Tensor<tf.Rank>,
-  model: tf.Sequential,
+  model: Model,
   axis: number,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _: any,
@@ -187,7 +226,7 @@ const deepFoolAttack = (
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const fgsmAttack = (
   image: tf.Tensor<tf.Rank>,
-  model: tf.Sequential,
+  model: Model,
   axis: number,
   loss: any,
 ) => {
@@ -200,7 +239,7 @@ const fgsmAttack = (
 
 const newtonFoolAttack = (
   image: tf.Tensor<tf.Rank>,
-  model: tf.Sequential,
+  model: Model,
   axis: number,
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loss: any,
@@ -257,7 +296,7 @@ const newtonFoolAttack = (
 const adversarialAttackDict: {
   [index: string]: (
     image: tf.Tensor<tf.Rank>,
-    model: tf.Sequential,
+    model: Model,
     axis: number,
     loss: any,
   ) => tf.Tensor<tf.Rank>
@@ -268,13 +307,13 @@ const adversarialAttackDict: {
 }
 
 async function showPrediction(
-  data: MnistData,
-  dispatch: Dispatch<any>,
-  model: tf.Sequential,
   attack: string,
+  originCanvas: OffscreenCanvas,
+  perturbationCanvas: OffscreenCanvas,
+  advCanvas: OffscreenCanvas,
 ) {
   const testExamples = 100
-  const examples = data.getTestData(testExamples)
+  const examples = model.getTestData(testExamples)
   tf.tidy(() => {
     const output = model.predict(examples.xs) as tf.Tensor<tf.Rank>
     const axis = 1
@@ -282,15 +321,11 @@ async function showPrediction(
     const predictions = Array.from(output.argMax(axis).dataSync())
     const accIndices = selectAccurateExample(labels, predictions)
     const index = accIndices[Math.floor(Math.random() * accIndices.length)]
-    dispatch(
-      setImage(
-        formatImage(
-          examples.xs.slice([index, 0], [1, examples.xs.shape[1]]).flatten(),
-        ),
-        predictions[index],
-        index,
-      ),
+    formatImage(
+      examples.xs.slice([index, 0], [1, examples.xs.shape[1]]).flatten(),
+      originCanvas,
     )
+    emitter.emit('put', setImage(predictions[index], index))
     const image = examples.xs.slice([index, 0], [1, examples.xs.shape[1]])
     const loss = (input: tf.Tensor<tf.Rank>) =>
       tf.metrics.categoricalCrossentropy(
@@ -302,15 +337,18 @@ async function showPrediction(
       tf.Rank
     >
     const predictionsAdv = Array.from(outputAdv.argMax(axis).dataSync())
-    dispatch(setPerturbation(formatImage(perturbation.flatten())))
-    dispatch(
-      setAdvImage(
-        formatImage(perturbation.add(image).flatten()),
-        predictionsAdv[0],
-        attack,
-      ),
-    )
+    formatImage(perturbation.flatten(), perturbationCanvas)
+    emitter.emit('put2', setPerturbation())
+    formatImage(perturbation.add(image).flatten(), advCanvas)
+    emitter.emit('put3', setAdvImage(predictionsAdv[0], attack))
   })
+}
+
+const loadFunc = async (model: any) => {
+  await model.load()
+}
+const trainFunc = async (model: any) => {
+  await model.train()
 }
 
 function* loadData() {
@@ -319,26 +357,26 @@ function* loadData() {
     put(setModelState(StateStage.init)),
     put(setPredicateState(StateStage.init)),
   ])
-  const data = new MnistData()
-  yield call(data.load)
-  yield all([put(setData(data)), put(setDataState(StateStage.end))])
+  yield call(loadFunc, model)
+  yield put(setDataState(StateStage.end))
 }
 
-function* trainModel(action: ReturnType<typeof trainModelAction>) {
+function* trainModel() {
   yield all([put(setModelState(StateStage.working))])
-  const model = createModel()
-  yield call(train, action.payload.data, action.payload.dispatch, model)
-  yield all([put(setModel(model)), put(setModelState(StateStage.end))])
+  yield call(trainFunc, model)
+  yield put(setModelState(StateStage.end))
 }
 
 function* predict(action: ReturnType<typeof predictImage>) {
+  // eslint-disable-next-line no-console
+  console.log('generating...')
   yield all([put(setPredicateState(StateStage.working))])
   yield call(
     showPrediction,
-    action.payload.data,
-    action.payload.dispatch,
-    action.payload.model,
     action.payload.attack,
+    action.payload.originCanvas,
+    action.payload.perturbationCanvas,
+    action.payload.advCanvas,
   )
   yield all([put(setPredicateState(StateStage.end))])
 }
@@ -347,4 +385,8 @@ export default function* rootSaga() {
   yield takeEvery('LOAD_DATA', loadData)
   yield takeEvery('TRAIN_MODEL', trainModel)
   yield takeEvery('PREDICT', predict)
+  yield fork(setLossAndAccChannel, emitter)
+  yield fork(putChannel('put'), emitter)
+  yield fork(putChannel('put2'), emitter)
+  yield fork(putChannel('put3'), emitter)
 }

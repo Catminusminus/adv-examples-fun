@@ -20,14 +20,11 @@ export interface State {
   dataState: StateStage
   modelState: StateStage
   accImage?: {
-    image: HTMLCanvasElement
     label: number
     index: number
   }
   predicateState: StateStage
-  perturbation?: HTMLCanvasElement
   advImage?: {
-    image: HTMLCanvasElement
     label: number
     attack: string
   }
@@ -121,7 +118,6 @@ export const reducer: Reducer<State, AppAction> = (
     case 'SET_PERTURBATION':
       return {
         ...state,
-        perturbation: action.payload,
       }
     case 'SET_ADVIMAGE':
       return {
