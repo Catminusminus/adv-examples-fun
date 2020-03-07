@@ -155,13 +155,13 @@ const deepFoolAttack = (
   const x0 = image
   const xArr = [x0]
   const rArr = []
-  const kHatX0 = Array.from(
-    (model.predict(xArr[0]) as tf.Tensor<tf.Rank>).argMax(axis).dataSync(),
-  )[0]
+  const kHatX0 = (model.predict(xArr[0]) as tf.Tensor<tf.Rank>)
+    .argMax(axis)
+    .dataSync()[0]
   for (let i = 0; i < 10; i++) {
-    const kHatXI = Array.from(
-      (model.predict(xArr[i]) as tf.Tensor<tf.Rank>).argMax(axis).dataSync(),
-    )[0]
+    const kHatXI = (model.predict(xArr[i]) as tf.Tensor<tf.Rank>)
+      .argMax(axis)
+      .dataSync()[0]
     if (kHatX0 !== kHatXI) {
       break
     }
@@ -195,22 +195,16 @@ const deepFoolAttack = (
     }
     const coefArr: any[] = wKArr.map(
       (v, i) =>
-        Array.from(
-          fKArr[i]
-            .abs()
-            .div(v.norm().add(tf.scalar(0.1)))
-            .dataSync(),
-        )[0],
+        fKArr[i]
+          .abs()
+          .div(v.norm().add(tf.scalar(0.1)))
+          .dataSync()[0],
     )
     const coef = tf.tensor1d(coefArr).argMax()
     const rI = tf
       .tensor1d(coefArr)
       .max()
-      .mul(
-        wKArr[Array.from(coef.dataSync())[0]].div(
-          wKArr[Array.from(coef.dataSync())[0]].norm(),
-        ),
-      )
+      .mul(wKArr[coef.dataSync()[0]].div(wKArr[coef.dataSync()[0]].norm()))
     rArr.push(rI)
     xArr.push(xArr[i].add(rI))
   }
@@ -244,9 +238,9 @@ const newtonFoolAttack = (
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   loss: any,
 ) => {
-  const l = Array.from(
-    (model.predict(image) as tf.Tensor<tf.Rank>).argMax(axis).dataSync(),
-  )[0]
+  const l = (model.predict(image) as tf.Tensor<tf.Rank>)
+    .argMax(axis)
+    .dataSync()[0]
   const dArr = []
   const xArr = [image]
   const f = (x: any) =>
@@ -255,9 +249,9 @@ const newtonFoolAttack = (
       .gather(tf.tensor1d([l], 'int32'))
   for (let i = 0; i < 50; i++) {
     if (
-      Array.from(
-        (model.predict(xArr[i]) as tf.Tensor<tf.Rank>).argMax(axis).dataSync(),
-      )[0] !== l
+      (model.predict(xArr[i]) as tf.Tensor<tf.Rank>)
+        .argMax(axis)
+        .dataSync()[0] !== l
     ) {
       break
     }
@@ -336,7 +330,7 @@ async function showPrediction(
     const outputAdv = model.predict(perturbation.add(image)) as tf.Tensor<
       tf.Rank
     >
-    const predictionsAdv = Array.from(outputAdv.argMax(axis).dataSync())
+    const predictionsAdv = outputAdv.argMax(axis).dataSync()
     formatImage(perturbation.flatten(), perturbationCanvas)
     emitter.emit('put2', setPerturbation())
     formatImage(perturbation.add(image).flatten(), advCanvas)
