@@ -197,13 +197,13 @@ const deepFoolAttack = (
       (v, i) =>
         fKArr[i]
           .abs()
-          .div(v.norm().add(tf.scalar(0.1)))
+          .div(v.norm().add(tf.scalar(0.01)))
           .dataSync()[0],
     )
-    const coef = tf.tensor1d(coefArr).argMax()
+    const coef = tf.tensor1d(coefArr).argMin()
     const rI = tf
       .tensor1d(coefArr)
-      .max()
+      .min()
       .mul(wKArr[coef.dataSync()[0]].div(wKArr[coef.dataSync()[0]].norm()))
     rArr.push(rI)
     xArr.push(xArr[i].add(rI))
