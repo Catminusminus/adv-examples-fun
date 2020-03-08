@@ -4,7 +4,7 @@ Try to generate adversarial images for fun and profit.
 ![screenshot](./resources/Screenshot.png)
 
 ## What is this
-You can generate adversarial images in your browser by the power of tensorflow.js.
+You can generate adversarial images _in your browser_ by the power of tensorflow.js.
 
 Demo: https://adv-examples-fun.netlify.com/
 
@@ -19,7 +19,7 @@ Currently, you can try the below attaks.
 ## Issues
 Currently, the implementation of DeepFool attack is slightly modified from the original paper. This is because I found that the denominator of some formulas can be so small that the perturbation is too big. I am investigating this issue.
 
-## Citations
+## References
 FGSM is described by
 ```
 @misc{goodfellow2014explaining,
