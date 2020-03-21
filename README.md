@@ -6,14 +6,12 @@ Try to generate adversarial images for fun and profit.
 ## What is this
 You can generate adversarial images _in your browser_ by the power of tensorflow.js.
 
-~~Demo: https://adv-examples-fun.netlify.com/~~
-
-Currently down. Sorry.
+Demo: https://adv-examples-fun.netlify.com/
 
 Attention! The above site is heavy. If you see a blank page, reload your browser.
 
 ## Attacks
-Currently, you can try the below attaks.
+You can try the below attaks.
 - FGSM
 - DeepFool
 - NewtonFool
