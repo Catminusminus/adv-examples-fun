@@ -49,7 +49,7 @@
     "eslint-plugin-react": "7.19.0",
     "eslint-plugin-react-hooks": "2.5.0",
     "eslint-plugin-standard": "4.0.1",
-    "husky": "4.2.3",
+    "husky": "4.2.5",
     "lint-staged": "10.1.2",
     "netlify-cli": "2.40.0",
     "npm-check-updates": "4.1.1",
