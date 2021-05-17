@@ -57,6 +57,6 @@
     "prettier": "2.2.1",
     "qawolf": "0.9.3",
     "redux-devtools-extension": "2.13.9",
-    "typescript": "3.9.7"
+    "typescript": "3.9.9"
   }
 }
