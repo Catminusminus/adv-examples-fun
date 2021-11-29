@@ -52,7 +52,7 @@
     "husky": "7.0.4",
     "lint-staged": "11.1.2",
     "netlify-cli": "5.4.16",
-    "npm-check-updates": "11.8.3",
+    "npm-check-updates": "11.8.5",
     "parcel-bundler": "1.12.5",
     "prettier": "2.3.2",
     "qawolf": "0.9.3",
