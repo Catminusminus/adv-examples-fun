@@ -50,7 +50,7 @@
     "eslint-plugin-react-hooks": "4.3.0",
     "eslint-plugin-standard": "4.1.0",
     "husky": "7.0.4",
-    "lint-staged": "11.1.2",
+    "lint-staged": "11.2.6",
     "netlify-cli": "5.4.16",
     "npm-check-updates": "11.8.5",
     "parcel-bundler": "1.12.5",
