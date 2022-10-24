@@ -15,7 +15,7 @@
   "dependencies": {
     "@material-ui/core": "^4.8.2",
     "@material-ui/icons": "^4.5.1",
-    "@tensorflow/tfjs": "^3.0.0",
+    "@tensorflow/tfjs": "^4.0.0",
     "beautiful-react-hooks": "^0.35.0",
     "konva": "^8.0.0",
     "react": "^16.12.0",
