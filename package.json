@@ -51,11 +51,11 @@
     "eslint-plugin-standard": "4.1.0",
     "husky": "7.0.4",
     "lint-staged": "11.2.6",
-    "netlify-cli": "5.4.16",
-    "npm-check-updates": "11.8.5",
+    "netlify-cli": "12.13.2",
+    "npm-check-updates": "16.7.5",
     "parcel-bundler": "1.12.5",
     "prettier": "2.8.4",
-    "qawolf": "0.9.3",
+    "qawolf": "2.6.1",
     "redux-devtools-extension": "2.13.9",
     "typescript": "3.9.10"
   }
